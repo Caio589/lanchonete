@@ -2,68 +2,54 @@ import { buscarProdutos, buscarCategorias } from "./data.js";
 
 console.log("CARDÁPIO INICIADO");
 
-/* ======================
+/* =======================
    ELEMENTOS
-====================== */
+======================= */
 const listaProdutos = document.getElementById("lista-produtos");
 const categoriasEl = document.getElementById("categorias");
-const pedidoEl = document.getElementById("meu-pedido");
-const totalEl = document.getElementById("total-pedido");
 
-const nomeInput = document.getElementById("nome");
-const telefoneInput = document.getElementById("telefone");
-const enderecoInput = document.getElementById("endereco");
+const pedidoEl = document.getElementById("meu-pedido");
+const totalPedidoEl = document.getElementById("total-pedido");
+
+const nomeInput = document.getElementById("nomeCliente");
+const telefoneInput = document.getElementById("telefoneCliente");
+
 const entregaSelect = document.getElementById("entrega");
+const enderecoInput = document.getElementById("enderecoCliente");
+
 const pagamentoSelect = document.getElementById("pagamento");
 const trocoInput = document.getElementById("troco");
 
-/* ======================
+/* =======================
    ESTADO
-====================== */
+======================= */
 let produtos = [];
-let categoriaAtual = "Todos";
+let categorias = [];
 let carrinho = [];
+let categoriaAtual = "Todos";
 let frete = 0;
 
-/* ======================
+/* =======================
    START
-====================== */
+======================= */
 async function iniciar() {
   produtos = await buscarProdutos();
-  const categorias = await buscarCategorias();
+  categorias = await buscarCategorias();
 
-  renderizarCategorias(categorias);
+  renderizarCategorias();
   renderizarProdutos();
   renderizarCarrinho();
 }
+
 iniciar();
 
-/* ======================
-   LISTENERS (TEMPO REAL)
-====================== */
-if (entregaSelect) entregaSelect.addEventListener("change", renderizarCarrinho);
-
-if (pagamentoSelect) {
-  pagamentoSelect.addEventListener("change", () => {
-    if (pagamentoSelect.value === "dinheiro") {
-      trocoInput.style.display = "block";
-    } else {
-      trocoInput.style.display = "none";
-      trocoInput.value = "";
-    }
-    renderizarCarrinho();
-  });
-}
-
-[trocoInput, nomeInput, telefoneInput, enderecoInput]
-  .forEach(el => el && el.addEventListener("input", renderizarCarrinho));
-
-/* ======================
+/* =======================
    CATEGORIAS
-====================== */
-function renderizarCategorias(categorias) {
+======================= */
+function renderizarCategorias() {
   categoriasEl.innerHTML = "";
   criarBotaoCategoria("Todos");
+
   categorias.forEach(c => criarBotaoCategoria(c.nome));
 }
 
@@ -78,9 +64,9 @@ function criarBotaoCategoria(nome) {
   categoriasEl.appendChild(btn);
 }
 
-/* ======================
+/* =======================
    PRODUTOS
-====================== */
+======================= */
 function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
@@ -103,11 +89,12 @@ function renderizarProdutos() {
 
     const div = document.createElement("div");
     div.className = "card";
+
     div.innerHTML = `
       <h3>${p.nome}</h3>
       <p>${p.descricao || ""}</p>
       <strong>R$ ${Number(p.preco).toFixed(2)}</strong>
-      <button class="btn btn-add">➕ Adicionar</button>
+      <button class="btn btn-add">+ Adicionar</button>
     `;
 
     div.querySelector("button").onclick = () => {
@@ -118,51 +105,56 @@ function renderizarProdutos() {
   });
 }
 
-/* ======================
-   CARRINHO / RESUMO
-====================== */
+/* =======================
+   CARRINHO
+======================= */
 function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
   renderizarCarrinho();
 }
 
 function renderizarCarrinho() {
-  if (!pedidoEl || !totalEl) {
-    console.warn("Resumo do pedido não encontrado no HTML");
-    return;
-  }
+  if (!pedidoEl || !totalPedidoEl) return;
 
   pedidoEl.innerHTML = "";
   let subtotal = 0;
 
   carrinho.forEach((item, i) => {
-    const div = document.createElement("div");
-    div.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
-    pedidoEl.appendChild(div);
+    const linha = document.createElement("div");
+    linha.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+    pedidoEl.appendChild(linha);
     subtotal += item.preco;
   });
 
-  frete = entregaSelect && entregaSelect.value === "fora" ? 7 : 0;
+  frete = entregaSelect.value === "fora" ? 7 : 0;
 
   if (frete > 0) {
-    const f = document.createElement("div");
-    f.innerText = `🚚 Frete — R$ ${frete.toFixed(2)}`;
-    pedidoEl.appendChild(f);
-  }
-
-  if (pagamentoSelect?.value === "dinheiro" && trocoInput?.value) {
-    const t = document.createElement("div");
-    t.innerText = `💵 Troco para — R$ ${Number(trocoInput.value).toFixed(2)}`;
-    pedidoEl.appendChild(t);
+    const freteDiv = document.createElement("div");
+    freteDiv.innerText = `🚚 Frete: R$ ${frete.toFixed(2)}`;
+    pedidoEl.appendChild(freteDiv);
   }
 
   const total = subtotal + frete;
-  totalEl.innerText = `Total: R$ ${total.toFixed(2)}`;
+  totalPedidoEl.innerText = `R$ ${total.toFixed(2)}`;
 }
 
-/* ======================
+/* =======================
+   ENTREGA / PAGAMENTO
+======================= */
+entregaSelect.addEventListener("change", renderizarCarrinho);
+
+pagamentoSelect.addEventListener("change", () => {
+  if (pagamentoSelect.value === "dinheiro") {
+    trocoInput.style.display = "block";
+  } else {
+    trocoInput.style.display = "none";
+    trocoInput.value = "";
+  }
+});
+
+/* =======================
    WHATSAPP
-====================== */
+======================= */
 window.enviarPedido = function () {
   if (carrinho.length === 0) {
     alert("Carrinho vazio");
@@ -174,35 +166,61 @@ window.enviarPedido = function () {
   const endereco = enderecoInput.value.trim();
   const pagamento = pagamentoSelect.value;
   const troco = trocoInput.value;
-  const entrega = entregaSelect.value;
 
-  let texto =
-`🍔🍕 *PEDIDO – DanBurgers* 🍕🍔
-━━━━━━━━━━━━━━━━━━
+  if (!nome || !telefone || !pagamento) {
+    alert("Preencha nome, telefone e pagamento");
+    return;
+  }
 
-👤 *Cliente:* ${nome || "-"}
-📞 *Telefone:* ${telefone || "-"}
-📍 *Entrega:* ${entrega === "fora" ? "Fora da cidade" : "Retirada no local"}
+  if (entregaSelect.value !== "retirada" && !endereco) {
+    alert("Informe o endereço");
+    return;
+  }
 
-${endereco ? `🏠 *Endereço:* ${endereco}\n` : ""}💳 *Pagamento:* ${pagamento === "dinheiro" ? "Dinheiro" : pagamento}
-${pagamento === "dinheiro" && troco ? `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}\n` : ""}
-🛒 *Itens do pedido:*
-`;
+  if (pagamento === "dinheiro" && !troco) {
+    alert("Informe o troco");
+    return;
+  }
+
+  let mensagem =
+    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
+    "━━━━━━━━━━━━━━━━━━%0A%0A" +
+    `👤 *Cliente:* ${nome}%0A` +
+    `📞 *Telefone:* ${telefone}%0A` +
+    `📍 *Entrega:* ${
+      entregaSelect.value === "fora"
+        ? "Fora da cidade"
+        : "Retirada no local"
+    }%0A`;
+
+  if (entregaSelect.value !== "retirada") {
+    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
+  }
+
+  mensagem += `%0A💳 *Pagamento:* ${
+    pagamento === "dinheiro" ? "Dinheiro" : pagamento
+  }%0A`;
+
+  if (pagamento === "dinheiro") {
+    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
+  }
+
+  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
 
   let subtotal = 0;
-
   carrinho.forEach((item, i) => {
-    texto += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}\n`;
+    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
     subtotal += item.preco;
   });
 
-  const total = subtotal + frete;
+  mensagem += `%0A`;
+  mensagem += frete > 0
+    ? `🚚 *Frete:* R$ ${frete.toFixed(2)}`
+    : `🚚 *Frete:* Grátis`;
 
-  texto += `
-🚚 *Frete:* ${frete > 0 ? `R$ ${frete.toFixed(2)}` : "Grátis"}
-💰 *Total:* R$ ${total.toFixed(2)}
-🔥 *DanBurgers agradece!*`;
+  mensagem += `%0A💰 *Total:* R$ ${(subtotal + frete).toFixed(2)}`;
+  mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
-  const whatsapp = "5511963266825"; // SEU NÚMERO
-  window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`, "_blank");
+  const url = `https://wa.me/55SEUNUMEROAQUI?text=${mensagem}`;
+  window.open(url, "_blank");
 };
