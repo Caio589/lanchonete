@@ -66,13 +66,21 @@ function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
   const filtrados =
-    categoriaAtual === "Todos"
-      ? produtos
-      : produtos.filter(
-          p =>
-            p.categoria &&
-            p.categoria.toLowerCase() === categoriaAtual.toLowerCase()
-        );
+  categoriaAtual === "Todos"
+    ? produtos
+    : produtos.filter(p => {
+        if (!p.categoria) return false;
+
+        const catProduto = p.categoria.toLowerCase().trim();
+        const catAtual = categoriaAtual.toLowerCase().trim();
+
+        // aceita "pizza", "pizzas", "pizza tradicional" etc
+        if (catAtual === "pizza") {
+          return catProduto.includes("pizza");
+        }
+
+        return catProduto === catAtual;
+      });
 
   if (filtrados.length === 0) {
     listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
