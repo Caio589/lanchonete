@@ -229,3 +229,98 @@ function escolherSegundoSabor(pizza1, tamanho) {
     precoFinal
   );
 }
+/* =======================
+   ENVIAR PEDIDO
+======================= */
+window.enviarPedido = async function () {
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    return;
+  }
+
+  const nome = nomeInput.value.trim();
+  const telefone = telefoneInput.value.trim();
+  const endereco = enderecoInput.value.trim();
+  const pagamento = pagamentoSelect.value;
+  const troco = trocoInput.value;
+
+  if (!nome || !telefone || !pagamento) {
+    alert("Preencha nome, telefone e pagamento");
+    return;
+  }
+
+  if (entregaSelect.value !== "retirada" && !endereco) {
+    alert("Informe o endereço");
+    return;
+  }
+
+  let subtotal = 0;
+  carrinho.forEach(i => (subtotal += i.preco));
+  const totalPedido = subtotal + frete;
+
+  /* ===== MONTA WHATSAPP ===== */
+  let mensagem =
+    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
+    "━━━━━━━━━━━━━━━━━━%0A%0A" +
+    `👤 *Cliente:* ${nome}%0A` +
+    `📞 *Telefone:* ${telefone}%0A` +
+    `📍 *Entrega:* ${
+      entregaSelect.value === "fora"
+        ? "Fora da cidade"
+        : entregaSelect.value === "cidade"
+        ? "Na cidade"
+        : "Retirada no local"
+    }%0A`;
+
+  if (entregaSelect.value !== "retirada") {
+    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
+  }
+
+  mensagem += `%0A💳 *Pagamento:* ${
+    pagamento === "pix"
+      ? "Pix"
+      : pagamento === "cartao"
+      ? "Cartão"
+      : "Dinheiro"
+  }%0A`;
+
+  if (pagamento === "dinheiro") {
+    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
+  }
+
+  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
+  carrinho.forEach((item, i) => {
+    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
+  });
+
+  mensagem += `%0A`;
+  mensagem +=
+    frete > 0
+      ? `🚗 *Frete:* R$ ${frete.toFixed(2)}`
+      : `🚚 *Frete:* Grátis`;
+
+  mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
+  mensagem += `%0A🔥 *DanBurgers agradece!*`;
+
+  /* ===== WHATSAPP ===== */
+  const whatsapp = "5577981184890"; // seu número
+  window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
+
+  /* ===== PAINEL / SUPABASE ===== */
+  await supabase.from("pedidos").insert([
+    {
+      cliente: nome,
+      telefone,
+      entrega: entregaSelect.value,
+      endereco,
+      pagamento,
+      troco: pagamento === "dinheiro" ? Number(troco) : null,
+      itens: carrinho,
+      total: totalPedido,
+      status: "novo"
+    }
+  ]);
+
+  carrinho = [];
+  renderizarCarrinho();
+};
