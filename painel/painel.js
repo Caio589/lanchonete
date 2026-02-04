@@ -1,8 +1,11 @@
 import { supabase } from "../js/supabase.js";
 
 const lista = document.getElementById("lista-pedidos");
+const som = document.getElementById("som-pedido");
 
-/* CARREGA PEDIDOS NOVOS */
+let pedidosImpressos = new Set();
+
+/* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
   const { data } = await supabase
     .from("pedidos")
@@ -10,29 +13,40 @@ async function carregarPedidos() {
     .eq("status", "novo")
     .order("created_at", { ascending: true });
 
-  lista.innerHTML = "";
-
   if (!data || data.length === 0) {
     lista.innerHTML = "<p>Nenhum pedido novo</p>";
     return;
   }
 
+  lista.innerHTML = "";
+
   data.forEach(pedido => {
+    if (!pedidosImpressos.has(pedido.id)) {
+      pedidosImpressos.add(pedido.id);
+      tocarSom();
+      imprimirPedido(pedido);
+    }
+
     const div = document.createElement("div");
     div.className = "pedido";
     div.innerHTML = `
       <strong>Pedido #${pedido.id}</strong><br>
       Cliente: ${pedido.cliente}<br>
-      Total: R$ ${pedido.total.toFixed(2)}<br>
-      <button>🖨️ Imprimir</button>
+      Total: R$ ${pedido.total.toFixed(2)}
     `;
-
-    div.querySelector("button").onclick = () => imprimirPedido(pedido);
     lista.appendChild(div);
   });
 }
 
-/* IMPRIME O PEDIDO */
+/* SOM */
+function tocarSom() {
+  if (som) {
+    som.currentTime = 0;
+    som.play().catch(() => {});
+  }
+}
+
+/* IMPRIME AUTOMÁTICO */
 async function imprimirPedido(pedido) {
   let texto = `
 Pedido #${pedido.id}
@@ -65,8 +79,6 @@ Total: R$ ${pedido.total.toFixed(2)}
     .from("pedidos")
     .update({ status: "impresso" })
     .eq("id", pedido.id);
-
-  carregarPedidos();
 }
 
 /* ATUALIZA A CADA 3s */
