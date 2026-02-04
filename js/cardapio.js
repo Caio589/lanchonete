@@ -221,5 +221,30 @@ window.enviarPedido = function () {
   mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
   const whatsapp = "5511963266825"; // SEU NÚMERO
+   
+   imprimirPedido(mensagem);
+
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
 };
+
+function imprimirPedido(mensagem) {
+  const cupom = document.getElementById("cupom");
+  const conteudo = document.getElementById("cupom-conteudo");
+
+  if (!cupom || !conteudo) {
+    console.warn("Cupom não encontrado no HTML");
+    return;
+  }
+
+  // Converte o texto do WhatsApp em HTML para impressão
+  conteudo.innerHTML = mensagem
+    .replace(/\n/g, "<br>")
+    .replace(/\*([^*]+)\*/g, "<strong>$1</strong>");
+
+  cupom.style.display = "block";
+
+  setTimeout(() => {
+    window.print();
+    cupom.style.display = "none";
+  }, 300);
+}
