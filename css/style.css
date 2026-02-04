@@ -176,3 +176,25 @@ button {
 .btn-whats:hover {
   opacity: 0.85;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #cupom, #cupom * {
+    visibility: visible;
+  }
+
+  #cupom {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm; /* impressora 58mm */
+    font-size: 12px;
+  }
+
+  h2 {
+    text-align: center;
+  }
+}
