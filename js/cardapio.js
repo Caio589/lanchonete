@@ -3,28 +3,30 @@ import { buscarProdutos, buscarCategorias } from "./data.js";
 console.log("CARDÁPIO INICIADO");
 
 /* =======================
+   CONFIG
+======================= */
+const WHATSAPP_NUMERO = "5511963266825"; // <-- SEU WHATSAPP AQUI
+
+/* =======================
    ELEMENTOS
 ======================= */
 const listaProdutos = document.getElementById("lista-produtos");
 const categoriasEl = document.getElementById("categorias");
-
 const pedidoEl = document.getElementById("meu-pedido");
 const totalPedidoEl = document.getElementById("total-pedido");
 
-const nomeInput = document.getElementById("nomeCliente");
-const telefoneInput = document.getElementById("telefoneCliente");
-
 const entregaSelect = document.getElementById("entrega");
-const enderecoInput = document.getElementById("enderecoCliente");
-
 const pagamentoSelect = document.getElementById("pagamento");
 const trocoInput = document.getElementById("troco");
+
+const nomeInput = document.getElementById("nomeCliente");
+const telefoneInput = document.getElementById("telefoneCliente");
+const enderecoInput = document.getElementById("enderecoCliente");
 
 /* =======================
    ESTADO
 ======================= */
 let produtos = [];
-let categorias = [];
 let carrinho = [];
 let categoriaAtual = "Todos";
 let frete = 0;
@@ -34,19 +36,17 @@ let frete = 0;
 ======================= */
 async function iniciar() {
   produtos = await buscarProdutos();
-  categorias = await buscarCategorias();
-
-  renderizarCategorias();
+  const categorias = await buscarCategorias();
+  renderizarCategorias(categorias);
   renderizarProdutos();
   renderizarCarrinho();
 }
-
 iniciar();
 
 /* =======================
    CATEGORIAS
 ======================= */
-function renderizarCategorias() {
+function renderizarCategorias(categorias) {
   categoriasEl.innerHTML = "";
   criarBotaoCategoria("Todos");
 
@@ -79,17 +79,11 @@ function renderizarProdutos() {
             p.categoria.toLowerCase() === categoriaAtual.toLowerCase()
         );
 
-  if (filtrados.length === 0) {
-    listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
-    return;
-  }
-
   filtrados.forEach(p => {
     if (p.preco == null) return;
 
     const div = document.createElement("div");
     div.className = "card";
-
     div.innerHTML = `
       <h3>${p.nome}</h3>
       <p>${p.descricao || ""}</p>
@@ -97,9 +91,8 @@ function renderizarProdutos() {
       <button class="btn btn-add">+ Adicionar</button>
     `;
 
-    div.querySelector("button").onclick = () => {
+    div.querySelector("button").onclick = () =>
       addCarrinho(p.nome, Number(p.preco));
-    };
 
     listaProdutos.appendChild(div);
   });
@@ -114,15 +107,13 @@ function addCarrinho(nome, preco) {
 }
 
 function renderizarCarrinho() {
-  if (!pedidoEl || !totalPedidoEl) return;
-
   pedidoEl.innerHTML = "";
   let subtotal = 0;
 
-  carrinho.forEach((item, i) => {
-    const linha = document.createElement("div");
-    linha.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
-    pedidoEl.appendChild(linha);
+  carrinho.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.innerText = `${index + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+    pedidoEl.appendChild(div);
     subtotal += item.preco;
   });
 
@@ -134,23 +125,8 @@ function renderizarCarrinho() {
     pedidoEl.appendChild(freteDiv);
   }
 
-  const total = subtotal + frete;
-  totalPedidoEl.innerText = `R$ ${total.toFixed(2)}`;
+  totalPedidoEl.innerText = `R$ ${(subtotal + frete).toFixed(2)}`;
 }
-
-/* =======================
-   ENTREGA / PAGAMENTO
-======================= */
-entregaSelect.addEventListener("change", renderizarCarrinho);
-
-pagamentoSelect.addEventListener("change", () => {
-  if (pagamentoSelect.value === "dinheiro") {
-    trocoInput.style.display = "block";
-  } else {
-    trocoInput.style.display = "none";
-    trocoInput.value = "";
-  }
-});
 
 /* =======================
    WHATSAPP
@@ -183,44 +159,52 @@ window.enviarPedido = function () {
   }
 
   let mensagem =
-    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
-    "━━━━━━━━━━━━━━━━━━%0A%0A" +
-    `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Telefone:* ${telefone}%0A` +
+    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔\n" +
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    `👤 *Cliente:* ${nome}\n` +
+    `📞 *Telefone:* ${telefone}\n` +
     `📍 *Entrega:* ${
       entregaSelect.value === "fora"
         ? "Fora da cidade"
+        : entregaSelect.value === "cidade"
+        ? "Na cidade"
         : "Retirada no local"
-    }%0A`;
+    }\n`;
 
   if (entregaSelect.value !== "retirada") {
-    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
+    mensagem += `🏠 *Endereço:* ${endereco}\n`;
   }
 
-  mensagem += `%0A💳 *Pagamento:* ${
-    pagamento === "dinheiro" ? "Dinheiro" : pagamento
-  }%0A`;
+  mensagem += `\n💳 *Pagamento:* ${
+    pagamento === "dinheiro"
+      ? "Dinheiro"
+      : pagamento === "pix"
+      ? "Pix"
+      : "Cartão"
+  }\n`;
 
   if (pagamento === "dinheiro") {
-    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
+    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}\n`;
   }
 
-  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
+  mensagem += `\n🛒 *Itens do pedido:*\n`;
 
   let subtotal = 0;
   carrinho.forEach((item, i) => {
-    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
+    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}\n`;
     subtotal += item.preco;
   });
 
-  mensagem += `%0A`;
+  mensagem += `\n`;
   mensagem += frete > 0
-    ? `🚚 *Frete:* R$ ${frete.toFixed(2)}`
-    : `🚚 *Frete:* Grátis`;
+    ? `🚚 *Frete:* R$ ${frete.toFixed(2)}\n`
+    : `🚚 *Frete:* Grátis\n`;
 
-  mensagem += `%0A💰 *Total:* R$ ${(subtotal + frete).toFixed(2)}`;
-  mensagem += `%0A🔥 *DanBurgers agradece!*`;
+  mensagem += `💰 *Total:* R$ ${(subtotal + frete).toFixed(2)}\n`;
+  mensagem += "🔥 *DanBurgers agradece!*";
 
-  const url = `https://wa.me/55SEUNUMEROAQUI?text=${mensagem}`;
+  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
+    mensagem
+  )}`;
   window.open(url, "_blank");
 };
