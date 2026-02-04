@@ -9,6 +9,7 @@ const categoriasEl = document.getElementById("categorias");
 /* ESTADO */
 let produtos = [];
 let categoriaAtual = "Todos";
+let carrinho = [];
 
 /* START */
 async function iniciar() {
@@ -66,9 +67,22 @@ function renderizarProdutos() {
       <h3>${p.nome}</h3>
       <p>${p.descricao || ""}</p>
       <strong>R$ ${Number(p.preco).toFixed(2)}</strong>
+
+      <button class="btn btn-add">➕ Adicionar</button>
     `;
+
+    div.querySelector("button").onclick = () => {
+      addCarrinho(p.nome, Number(p.preco));
+    };
+
     listaProdutos.appendChild(div);
   });
+}
+
+/* CARRINHO (mínimo só pra funcionar) */
+function addCarrinho(nome, preco) {
+  carrinho.push({ nome, preco });
+  console.log("Carrinho:", carrinho);
 }
 
 iniciar();
