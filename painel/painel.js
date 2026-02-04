@@ -1,141 +1,111 @@
-/* ======================
-   PAINEL – DANBURGERS
-====================== */
+import { supabase } from "../js/supabase.js";
 
-const listaPedidosEl = document.getElementById("lista-pedidos");
-const cupom = document.getElementById("cupom");
-const cupomConteudo = document.getElementById("cupom-conteudo");
+const lista = document.getElementById("lista-pedidos");
+const botaoSom = document.getElementById("ativar-som");
 
-let pedidoAtual = null;
+let pedidosImpressos = new Set();
 
-/* ======================
-   CARREGAR PEDIDOS
-====================== */
+/* ===== SOM (WEB AUDIO API) ===== */
+let audioContext = null;
+let somLiberado = false;
+
+/* LIBERAR SOM (1 CLIQUE) */
+botaoSom.onclick = () => {
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  somLiberado = true;
+  botaoSom.innerText = "🔔 Som ativado";
+  botaoSom.disabled = true;
+
+  // Beep de confirmação
+  tocarSom();
+};
+
+/* TOCAR SOM */
+function tocarSom() {
+  if (!somLiberado || !audioContext) return;
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.25);
+}
+
+/* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
-  try {
-    const res = await fetch("/api/pedidos");
-    if (!res.ok) throw new Error("Erro ao buscar pedidos");
+  const { data } = await supabase
+    .from("pedidos")
+    .select("*")
+    .eq("status", "novo")
+    .order("created_at", { ascending: true });
 
-    const pedidos = await res.json();
-    listaPedidosEl.innerHTML = "";
-
-    pedidos.forEach(p => {
-      const div = document.createElement("div");
-      div.className = "pedido";
-      div.innerHTML = `
-        <strong>${p.cliente}</strong><br>
-        Total: R$ ${Number(p.total).toFixed(2)}<br>
-        <small>Status: ${p.status}</small>
-      `;
-
-      div.onclick = () => selecionarPedido(p);
-      listaPedidosEl.appendChild(div);
-    });
-  } catch (e) {
-    console.error("Erro ao carregar pedidos:", e);
-  }
-}
-
-/* ======================
-   SELECIONAR PEDIDO
-====================== */
-function selecionarPedido(pedido) {
-  pedidoAtual = pedido;
-  renderizarCupom(pedido);
-}
-
-/* ======================
-   RENDER CUPOM
-====================== */
-function renderizarCupom(p) {
-  let texto = `
-PEDIDO – DanBurgers
--------------------
-
-Cliente: ${p.cliente}
-Telefone: ${p.telefone}
-Entrega: ${p.entrega}
-`;
-
-  if (p.endereco) texto += `Endereço: ${p.endereco}\n`;
-
-  texto += `
-Pagamento: ${p.pagamento}
-`;
-
-  if (p.troco !== null && p.troco !== undefined) {
-    texto += `Troco para: R$ ${Number(p.troco).toFixed(2)}\n`;
-  }
-
-  texto += `
-Itens:
-`;
-
-  if (Array.isArray(p.itens)) {
-    p.itens.forEach((i, idx) => {
-      texto += `${idx + 1}. ${i.nome} - R$ ${Number(i.preco).toFixed(2)}\n`;
-    });
-  }
-
-  texto += `
-Total: R$ ${Number(p.total).toFixed(2)}
-
-DanBurgers agradece!
-`;
-
-  cupomConteudo.innerHTML = texto.replace(/\n/g, "<br>");
-  cupom.style.display = "block";
-
-  /* IMPRESSÃO AUTOMÁTICA */
-  setTimeout(() => {
-    window.print();
-  }, 300);
-}
-
-/* ======================
-   BOTÃO IMPRIMIR (BACKUP)
-====================== */
-window.imprimirPedido = function () {
-  if (!pedidoAtual) {
-    alert("Selecione um pedido");
+  if (!data || data.length === 0) {
+    lista.innerHTML = "<p>Nenhum pedido novo</p>";
     return;
   }
 
-  setTimeout(() => {
-    window.print();
-  }, 300);
-};
+  lista.innerHTML = "";
 
-/* ======================
-   RELATÓRIO DIÁRIO
-====================== */
-window.relatorioDiario = async function () {
-  const res = await fetch("/api/relatorio/diario");
-  const dados = await res.json();
+  data.forEach(pedido => {
+    if (!pedidosImpressos.has(pedido.id)) {
+      pedidosImpressos.add(pedido.id);
+      tocarSom();
+      imprimirPedido(pedido);
+    }
 
-  alert(
-    `Relatório Diário\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
-      dados.total
-    ).toFixed(2)}`
-  );
-};
+    const div = document.createElement("div");
+    div.className = "pedido";
+    div.innerHTML = `
+      <strong>Pedido #${pedido.id}</strong><br>
+      Cliente: ${pedido.cliente}<br>
+      Total: R$ ${pedido.total.toFixed(2)}
+    `;
+    lista.appendChild(div);
+  });
+}
 
-/* ======================
-   RELATÓRIO MENSAL
-====================== */
-window.relatorioMensal = async function () {
-  const res = await fetch("/api/relatorio/mensal");
-  const dados = await res.json();
+/* IMPRIMIR AUTOMÁTICO */
+async function imprimirPedido(pedido) {
+  let texto = `
+Pedido #${pedido.id}
+Cliente: ${pedido.cliente}
+Telefone: ${pedido.telefone}
 
-  alert(
-    `Relatório Mensal\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
-      dados.total
-    ).toFixed(2)}`
-  );
-};
+`;
 
-/* ======================
-   START
-====================== */
+  pedido.itens.forEach(item => {
+    texto += `${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
+  });
+
+  texto += `
+-------------------------
+Total: R$ ${pedido.total.toFixed(2)}
+`;
+
+  const cupom = document.getElementById("cupom");
+  const conteudo = document.getElementById("cupom-conteudo");
+
+  conteudo.innerHTML = texto.replace(/\n/g, "<br>");
+  cupom.style.display = "block";
+
+  window.print();
+
+  cupom.style.display = "none";
+
+  /* MARCA COMO IMPRESSO */
+  await supabase
+    .from("pedidos")
+    .update({ status: "impresso" })
+    .eq("id", pedido.id);
+}
+
+/* ATUALIZA A CADA 3s */
 carregarPedidos();
-setInterval(carregarPedidos, 5000);
+setInterval(carregarPedidos, 3000);
