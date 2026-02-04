@@ -304,7 +304,7 @@ window.enviarPedido = async function () {
 
   /* ===== WHATSAPP ===== */
   const whatsapp = "5577981184890"; // seu número
-  window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
+ window.location.href = `https://wa.me/${whatsapp}?text=${mensagem}`;
 
   /* ===== PAINEL / SUPABASE ===== */
   await supabase.from("pedidos").insert([
