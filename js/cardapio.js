@@ -173,21 +173,6 @@ window.enviarPedido = async function () {
   carrinho.forEach(i => (subtotal += i.preco));
   const totalPedido = subtotal + frete;
 
-  /* ===== SALVA NO SUPABASE ===== */
-  await supabase.from("pedidos").insert([
-    {
-      cliente: nome,
-      telefone: telefone,
-      entrega: entregaSelect.value,
-      endereco: endereco,
-      pagamento: pagamento,
-      troco: pagamento === "dinheiro" ? Number(troco) : null,
-      itens: carrinho,
-      total: totalPedido,
-      status: "novo"
-    }
-  ]);
-
   /* ===== MONTA WHATSAPP ===== */
   let mensagem =
     "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
@@ -233,8 +218,24 @@ window.enviarPedido = async function () {
   mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
   mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
+  /* ===== WHATSAPP PRIMEIRO (ANTI-BLOQUEIO) ===== */
   const whatsapp = "5511963266825";
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
+
+  /* ===== SALVA NO SUPABASE ===== */
+  await supabase.from("pedidos").insert([
+    {
+      cliente: nome,
+      telefone: telefone,
+      entrega: entregaSelect.value,
+      endereco: endereco,
+      pagamento: pagamento,
+      troco: pagamento === "dinheiro" ? Number(troco) : null,
+      itens: carrinho,
+      total: totalPedido,
+      status: "novo"
+    }
+  ]);
 
   carrinho = [];
   renderizarCarrinho();
