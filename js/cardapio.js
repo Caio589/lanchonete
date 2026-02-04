@@ -275,5 +275,45 @@ window.enviarPedido = async function () {
   ]);
 
   carrinho = [];
+
+   function abrirPizzaDoisSabores(tamanho) {
+  const sabores = produtos.filter(
+    p => p.categoria && p.categoria.toLowerCase() === "pizza"
+  );
+
+  if (sabores.length < 2) {
+    alert("Cadastre pelo menos 2 sabores de pizza");
+    return;
+  }
+
+  let lista = "Escolha o PRIMEIRO sabor:\n\n";
+  sabores.forEach((s, i) => {
+    lista += `${i + 1} - ${s.nome}\n`;
+  });
+
+  const s1 = prompt(lista);
+  if (!s1 || !sabores[s1 - 1]) return;
+
+  let lista2 = "Escolha o SEGUNDO sabor:\n\n";
+  sabores.forEach((s, i) => {
+    if (i !== s1 - 1) lista2 += `${i + 1} - ${s.nome}\n`;
+  });
+
+  const s2 = prompt(lista2);
+  if (!s2 || !sabores[s2 - 1]) return;
+
+  const sabor1 = sabores[s1 - 1];
+  const sabor2 = sabores[s2 - 1];
+
+  const preco1 = sabor1[`preco_${tamanho}`];
+  const preco2 = sabor2[`preco_${tamanho}`];
+
+  const precoFinal = Math.max(preco1, preco2);
+
+  addCarrinho(
+    `Pizza 2 sabores (${tamanho.toUpperCase()}): ${sabor1.nome} + ${sabor2.nome}`,
+    precoFinal
+  );
+}
   renderizarCarrinho();
 };
