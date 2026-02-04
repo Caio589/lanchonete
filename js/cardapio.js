@@ -127,6 +127,11 @@ function addCarrinho(nome, preco) {
 }
 
 function renderizarCarrinho() {
+  if (!pedidoEl || !totalEl) {
+    console.warn("Resumo do pedido não encontrado no HTML");
+    return;
+  }
+
   pedidoEl.innerHTML = "";
   let subtotal = 0;
 
@@ -145,7 +150,7 @@ function renderizarCarrinho() {
     pedidoEl.appendChild(f);
   }
 
-  if (pagamentoSelect.value === "dinheiro" && trocoInput.value) {
+  if (pagamentoSelect?.value === "dinheiro" && trocoInput?.value) {
     const t = document.createElement("div");
     t.innerText = `💵 Troco para — R$ ${Number(trocoInput.value).toFixed(2)}`;
     pedidoEl.appendChild(t);
