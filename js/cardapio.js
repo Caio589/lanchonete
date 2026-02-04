@@ -86,3 +86,26 @@ function addCarrinho(nome, preco) {
 }
 
 iniciar();
+
+window.enviarPedido = function () {
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    return;
+  }
+
+  let texto = "*🍔 PEDIDO – DanBurgers 🍔*\n\n";
+  let total = 0;
+
+  carrinho.forEach((item, i) => {
+    texto += `${i + 1}️⃣ ${item.nome} – R$ ${item.preco.toFixed(2)}\n`;
+    total += item.preco;
+  });
+
+  texto += `\n💰 *Total:* R$ ${total.toFixed(2)}`;
+  texto += `\n\n📍 Pedido feito pelo cardápio digital`;
+
+  const telefone = "5511963266825"; // SEU WHATSAPP
+  const url = `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`;
+
+  window.open(url, "_blank");
+};
