@@ -1,3 +1,4 @@
+import { supabase } from "./supabase.js";
 import { buscarProdutos, buscarCategorias } from "./data.js";
 
 /* =======================
@@ -36,7 +37,6 @@ async function iniciar() {
   renderizarProdutos();
   renderizarCarrinho();
 }
-
 iniciar();
 
 /* =======================
@@ -112,19 +112,14 @@ function renderizarCarrinho() {
   resumoEl.innerHTML = "";
   let subtotal = 0;
 
-  carrinho.forEach((item, index) => {
-    resumoEl.innerHTML += `
-      ${index + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}<br>
-    `;
+  carrinho.forEach((item, i) => {
+    resumoEl.innerHTML += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(
+      2
+    )}<br>`;
     subtotal += item.preco;
   });
 
-  // FRETE
-  if (entregaSelect.value === "fora") {
-    frete = 7;
-  } else {
-    frete = 0;
-  }
+  frete = entregaSelect.value === "fora" ? 7 : 0;
 
   resumoEl.innerHTML += "<br>";
   resumoEl.innerHTML +=
@@ -150,9 +145,9 @@ pagamentoSelect.addEventListener("change", () => {
 });
 
 /* =======================
-   WHATSAPP
+   ENVIAR PEDIDO
 ======================= */
-window.enviarPedido = function () {
+window.enviarPedido = async function () {
   if (carrinho.length === 0) {
     alert("Carrinho vazio");
     return;
@@ -175,6 +170,25 @@ window.enviarPedido = function () {
   }
 
   let subtotal = 0;
+  carrinho.forEach(i => (subtotal += i.preco));
+  const totalPedido = subtotal + frete;
+
+  /* ===== SALVA NO SUPABASE ===== */
+  await supabase.from("pedidos").insert([
+    {
+      cliente: nome,
+      telefone: telefone,
+      entrega: entregaSelect.value,
+      endereco: endereco,
+      pagamento: pagamento,
+      troco: pagamento === "dinheiro" ? Number(troco) : null,
+      itens: carrinho,
+      total: totalPedido,
+      status: "novo"
+    }
+  ]);
+
+  /* ===== MONTA WHATSAPP ===== */
   let mensagem =
     "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
     "━━━━━━━━━━━━━━━━━━%0A%0A" +
@@ -208,7 +222,6 @@ window.enviarPedido = function () {
 
   carrinho.forEach((item, i) => {
     mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
-    subtotal += item.preco;
   });
 
   mensagem += `%0A`;
@@ -217,33 +230,12 @@ window.enviarPedido = function () {
       ? `🚗 *Frete:* R$ ${frete.toFixed(2)}`
       : `🚚 *Frete:* Grátis`;
 
-  mensagem += `%0A💰 *Total:* R$ ${(subtotal + frete).toFixed(2)}`;
+  mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
   mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
-  const whatsapp = "5511963266825"; // SEU NÚMERO
-   
-   imprimirPedido(mensagem);
-
+  const whatsapp = "5511963266825";
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
-};
 
-window.imprimirPedido = function (mensagem) {
-  const cupom = document.getElementById("cupom");
-  const conteudo = document.getElementById("cupom-conteudo");
-
-  if (!cupom || !conteudo) {
-    console.warn("Cupom não encontrado no HTML");
-    return;
-  }
-
-  conteudo.innerHTML = mensagem
-    .replace(/\n/g, "<br>")
-    .replace(/\*([^*]+)\*/g, "<strong>$1</strong>");
-
-  cupom.style.display = "block";
-
-  setTimeout(() => {
-    window.print();
-    cupom.style.display = "none";
-  }, 300);
+  carrinho = [];
+  renderizarCarrinho();
 };
