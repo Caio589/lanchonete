@@ -227,7 +227,7 @@ window.enviarPedido = function () {
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
 };
 
-function imprimirPedido(mensagem) {
+window.imprimirPedido = function (mensagem) {
   const cupom = document.getElementById("cupom");
   const conteudo = document.getElementById("cupom-conteudo");
 
@@ -236,7 +236,6 @@ function imprimirPedido(mensagem) {
     return;
   }
 
-  // Converte o texto do WhatsApp em HTML para impressão
   conteudo.innerHTML = mensagem
     .replace(/\n/g, "<br>")
     .replace(/\*([^*]+)\*/g, "<strong>$1</strong>");
@@ -247,4 +246,4 @@ function imprimirPedido(mensagem) {
     window.print();
     cupom.style.display = "none";
   }, 300);
-}
+};
