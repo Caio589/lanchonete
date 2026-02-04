@@ -66,33 +66,62 @@ function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
   const filtrados =
-  categoriaAtual === "Todos"
-    ? produtos
-    : produtos.filter(p => {
-        if (!p.categoria) return false;
+    categoriaAtual === "Todos"
+      ? produtos
+      : produtos.filter(p => {
+          if (!p.categoria) return false;
 
-        const catProduto = p.categoria.toLowerCase().trim();
-        const catAtual = categoriaAtual.toLowerCase().trim();
+          const catProduto = p.categoria.toLowerCase().trim();
+          const catAtual = categoriaAtual.toLowerCase().trim();
 
-        // aceita "pizza", "pizzas", "pizza tradicional" etc
-        if (catAtual === "pizza") {
-          return catProduto.includes("pizza");
-        }
+          if (catAtual === "pizza") {
+            return catProduto.includes("pizza");
+          }
 
-        return catProduto === catAtual;
-      });
+          return catProduto === catAtual;
+        });
 
   if (filtrados.length === 0) {
     listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
     return;
   }
 
- function renderizarPizza(p) {
-  if (
-    p.preco_p == null ||
-    p.preco_m == null ||
-    p.preco_g == null
-  ) return;
+  filtrados.forEach(p => {
+    if (p.categoria && p.categoria.toLowerCase().includes("pizza")) {
+      renderizarPizza(p);
+    } else {
+      renderizarProduto(p);
+    }
+  });
+}
+
+/* =======================
+   PRODUTO NORMAL
+======================= */
+function renderizarProduto(p) {
+  if (p.preco == null) return;
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <h3>${p.nome}</h3>
+    <p>${p.descricao || ""}</p>
+    <strong>R$ ${Number(p.preco).toFixed(2)}</strong>
+    <button class="btn btn-add">+ Adicionar</button>
+  `;
+
+  div.querySelector("button").onclick = () => {
+    addCarrinho(p.nome, Number(p.preco));
+  };
+
+  listaProdutos.appendChild(div);
+}
+
+/* =======================
+   PIZZA (1 E 2 SABORES)
+======================= */
+function renderizarPizza(p) {
+  if (p.preco_p == null || p.preco_m == null || p.preco_g == null) return;
 
   const div = document.createElement("div");
   div.className = "card";
@@ -102,7 +131,6 @@ function renderizarProdutos() {
     <p>${p.descricao || ""}</p>
 
     <strong>1 sabor</strong><br>
-
     <button class="btn btn-add">P — R$ ${Number(p.preco_p).toFixed(2)}</button>
     <button class="btn btn-add">M — R$ ${Number(p.preco_m).toFixed(2)}</button>
     <button class="btn btn-add">G — R$ ${Number(p.preco_g).toFixed(2)}</button>
@@ -110,55 +138,22 @@ function renderizarProdutos() {
     <hr>
 
     <strong>2 sabores</strong><br>
-
-    <button class="btn btn-add btn-2sabores">P (2 sabores)</button>
-    <button class="btn btn-add btn-2sabores">M (2 sabores)</button>
-    <button class="btn btn-add btn-2sabores">G (2 sabores)</button>
+    <button class="btn btn-add">P (2 sabores)</button>
+    <button class="btn btn-add">M (2 sabores)</button>
+    <button class="btn btn-add">G (2 sabores)</button>
   `;
 
   const botoes = div.querySelectorAll("button");
 
-  // 👉 1 sabor
-  botoes[0].onclick = () =>
-    addCarrinho(`${p.nome} (P)`, Number(p.preco_p));
+  // 1 sabor
+  botoes[0].onclick = () => addCarrinho(`${p.nome} (P)`, Number(p.preco_p));
+  botoes[1].onclick = () => addCarrinho(`${p.nome} (M)`, Number(p.preco_m));
+  botoes[2].onclick = () => addCarrinho(`${p.nome} (G)`, Number(p.preco_g));
 
-  botoes[1].onclick = () =>
-    addCarrinho(`${p.nome} (M)`, Number(p.preco_m));
-
-  botoes[2].onclick = () =>
-    addCarrinho(`${p.nome} (G)`, Number(p.preco_g));
-
-  // 👉 2 sabores
-  botoes[3].onclick = () => escolherSegundoSabor(p, "P");
-  botoes[4].onclick = () => escolherSegundoSabor(p, "M");
-  botoes[5].onclick = () => escolherSegundoSabor(p, "G");
-
-  listaProdutos.appendChild(div);
-}
-   
-/* ===== PIZZA ===== */
-function renderizarPizza(p) {
-  const precoP = Number(p.preco_p);
-  const precoM = Number(p.preco_m);
-  const precoG = Number(p.preco_g);
-
-  if (isNaN(precoP) || isNaN(precoM) || isNaN(precoG)) return;
-
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerHTML = `
-    <h3>${p.nome}</h3>
-    <p>${p.descricao || ""}</p>
-
-    <button class="btn btn-add">🍕 P — R$ ${precoP.toFixed(2)}</button>
-    <button class="btn btn-add">🍕 M — R$ ${precoM.toFixed(2)}</button>
-    <button class="btn btn-add">🍕 G — R$ ${precoG.toFixed(2)}</button>
-  `;
-
-  const botoes = div.querySelectorAll("button");
-  botoes[0].onclick = () => addCarrinho(`${p.nome} (P)`, precoP);
-  botoes[1].onclick = () => addCarrinho(`${p.nome} (M)`, precoM);
-  botoes[2].onclick = () => addCarrinho(`${p.nome} (G)`, precoG);
+  // 2 sabores
+  botoes[3].onclick = () => escolherSegundoSabor(p, "p");
+  botoes[4].onclick = () => escolherSegundoSabor(p, "m");
+  botoes[5].onclick = () => escolherSegundoSabor(p, "g");
 
   listaProdutos.appendChild(div);
 }
@@ -208,173 +203,29 @@ pagamentoSelect.addEventListener("change", () => {
 });
 
 /* =======================
-   ENVIAR PEDIDO
+   2 SABORES (ESCOLHA)
 ======================= */
-window.enviarPedido = async function () {
-  if (carrinho.length === 0) {
-    alert("Carrinho vazio");
-    return;
-  }
-
-  const nome = nomeInput.value.trim();
-  const telefone = telefoneInput.value.trim();
-  const endereco = enderecoInput.value.trim();
-  const pagamento = pagamentoSelect.value;
-  const troco = trocoInput.value;
-
-  if (!nome || !telefone || !pagamento) {
-    alert("Preencha nome, telefone e pagamento");
-    return;
-  }
-
-  if (entregaSelect.value !== "retirada" && !endereco) {
-    alert("Informe o endereço");
-    return;
-  }
-
-  let subtotal = 0;
-  carrinho.forEach(i => (subtotal += i.preco));
-  const totalPedido = subtotal + frete;
-
-  let mensagem =
-    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
-    "━━━━━━━━━━━━━━━━━━%0A%0A" +
-    `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Telefone:* ${telefone}%0A` +
-    `📍 *Entrega:* ${
-      entregaSelect.value === "fora"
-        ? "Fora da cidade"
-        : entregaSelect.value === "cidade"
-        ? "Na cidade"
-        : "Retirada no local"
-    }%0A`;
-
-  if (entregaSelect.value !== "retirada") {
-    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
-  }
-
-  mensagem += `%0A💳 *Pagamento:* ${
-    pagamento === "pix"
-      ? "Pix"
-      : pagamento === "cartao"
-      ? "Cartão"
-      : "Dinheiro"
-  }%0A`;
-
-  if (pagamento === "dinheiro") {
-    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
-  }
-
-  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
-  carrinho.forEach((item, i) => {
-    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
-  });
-
-  mensagem += `%0A`;
-  mensagem +=
-    frete > 0
-      ? `🚗 *Frete:* R$ ${frete.toFixed(2)}`
-      : `🚚 *Frete:* Grátis`;
-
-  mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
-  mensagem += `%0A🔥 *DanBurgers agradece!*`;
-
-  const whatsapp = "5577981184890";
-  window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
-
-  await supabase.from("pedidos").insert([
-    {
-      cliente: nome,
-      telefone: telefone,
-      entrega: entregaSelect.value,
-      endereco: endereco,
-      pagamento: pagamento,
-      troco: pagamento === "dinheiro" ? Number(troco) : null,
-      itens: carrinho,
-      total: totalPedido,
-      status: "novo"
-    }
-  ]);
-
-  carrinho = [];
-
-   function abrirPizzaDoisSabores(tamanho) {
-  const sabores = produtos.filter(
-    p => p.categoria && p.categoria.toLowerCase() === "pizza"
-  );
-
-  if (sabores.length < 2) {
-    alert("Cadastre pelo menos 2 sabores de pizza");
-    return;
-  }
-
-  let lista = "Escolha o PRIMEIRO sabor:\n\n";
-  sabores.forEach((s, i) => {
-    lista += `${i + 1} - ${s.nome}\n`;
-  });
-
-  const s1 = prompt(lista);
-  if (!s1 || !sabores[s1 - 1]) return;
-
-  let lista2 = "Escolha o SEGUNDO sabor:\n\n";
-  sabores.forEach((s, i) => {
-    if (i !== s1 - 1) lista2 += `${i + 1} - ${s.nome}\n`;
-  });
-
-  const s2 = prompt(lista2);
-  if (!s2 || !sabores[s2 - 1]) return;
-
-  const sabor1 = sabores[s1 - 1];
-  const sabor2 = sabores[s2 - 1];
-
-  const preco1 = sabor1[`preco_${tamanho}`];
-  const preco2 = sabor2[`preco_${tamanho}`];
-
-  const precoFinal = Math.max(preco1, preco2);
-
-  addCarrinho(
-    `Pizza 2 sabores (${tamanho.toUpperCase()}): ${sabor1.nome} + ${sabor2.nome}`,
-    precoFinal
-  );
-}
-  renderizarCarrinho();
-};
 function escolherSegundoSabor(pizza1, tamanho) {
   const sabores = produtos.filter(
-    p => p.categoria && p.categoria.toLowerCase() === "pizza"
+    p => p.categoria && p.categoria.toLowerCase().includes("pizza")
   );
 
-  let nomes = sabores.map((p, i) => `${i + 1} - ${p.nome}`).join("\n");
-
-  const escolha = prompt(
-    `Escolha o segundo sabor (${tamanho}):\n\n${nomes}`
-  );
-
+  let lista = sabores.map((p, i) => `${i + 1} - ${p.nome}`).join("\n");
+  const escolha = prompt(`Escolha o segundo sabor:\n\n${lista}`);
   const index = Number(escolha) - 1;
+
   if (!sabores[index]) {
     alert("Sabor inválido");
     return;
   }
 
   const pizza2 = sabores[index];
-
-  let preco1, preco2;
-
-  if (tamanho === "P") {
-    preco1 = pizza1.preco_p;
-    preco2 = pizza2.preco_p;
-  } else if (tamanho === "M") {
-    preco1 = pizza1.preco_m;
-    preco2 = pizza2.preco_m;
-  } else {
-    preco1 = pizza1.preco_g;
-    preco2 = pizza2.preco_g;
-  }
-
-  const precoFinal = Math.max(Number(preco1), Number(preco2));
+  const preco1 = Number(pizza1[`preco_${tamanho}`]);
+  const preco2 = Number(pizza2[`preco_${tamanho}`]);
+  const precoFinal = Math.max(preco1, preco2);
 
   addCarrinho(
-    `Pizza ${pizza1.nome} + ${pizza2.nome} (${tamanho})`,
+    `Pizza ${pizza1.nome} + ${pizza2.nome} (${tamanho.toUpperCase()})`,
     precoFinal
   );
 }
