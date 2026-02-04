@@ -40,6 +40,15 @@ async function iniciar() {
 iniciar();
 
 /* ======================
+   LISTENERS (CORREÇÃO)
+====================== */
+if (entregaSelect) {
+  entregaSelect.addEventListener("change", () => {
+    renderizarCarrinho();
+  });
+}
+
+/* ======================
    CATEGORIAS
 ====================== */
 function renderizarCategorias(categorias) {
@@ -119,8 +128,14 @@ function renderizarCarrinho() {
   });
 
   frete = entregaSelect && entregaSelect.value === "fora" ? 7 : 0;
-  const total = subtotal + frete;
 
+  if (frete > 0) {
+    const freteDiv = document.createElement("div");
+    freteDiv.innerText = `🚚 Frete — R$ ${frete.toFixed(2)}`;
+    pedidoEl.appendChild(freteDiv);
+  }
+
+  const total = subtotal + frete;
   totalEl.innerText = `Total: R$ ${total.toFixed(2)}`;
 }
 
@@ -167,7 +182,7 @@ ${pagamento === "dinheiro" && troco ? `💵 *Troco para:* R$ ${Number(troco).toF
 💰 *Total:* R$ ${total.toFixed(2)}
 🔥 *DanBurgers agradece!*`;
 
-  const whatsapp = "5511963266825"; // SEU NÚMERO
+  const whatsapp = "5511963266825";
   const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`;
 
   window.open(url, "_blank");
