@@ -1,63 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel da Lanchonete</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-    }
-
-    .pedido {
-      background: #fff;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    button {
-      padding: 10px;
-      cursor: pointer;
-      margin-right: 5px;
-      margin-top: 6px;
-    }
-
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #cupom, #cupom * {
-        visibility: visible;
-      }
-      #cupom {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80mm;
-        font-size: 13px;
-      }
-    }
-  </style>
+  <title>Painel – DanBurgers</title>
+  <link rel="stylesheet" href="painel.css" />
 </head>
 <body>
 
-<h2>🧾 Pedidos</h2>
+<header class="topo">
+  <div class="logo">🍔 <strong>DanBurgers</strong></div>
+  <div class="status">🟢 Online</div>
+</header>
 
-<button id="ativar-som">🔊 Ativar som de pedidos</button>
-<button id="btn-relatorio">📊 Relatório Mensal</button>
+<main class="container">
 
-<div id="lista-pedidos"></div>
+  <!-- LISTA DE PEDIDOS -->
+  <section class="lista-pedidos" id="lista-pedidos">
+    <!-- cards de pedidos entram aqui pelo JS -->
+  </section>
 
-<div id="cupom" style="display:none">
-  <h3 style="text-align:center">DanBurgers</h3>
-  <hr>
-  <div id="cupom-conteudo"></div>
-</div>
+  <!-- DETALHES DO PEDIDO -->
+  <section class="detalhe-pedido">
+    <h2>Detalhes do pedido</h2>
 
-<script type="module" src="./painel.js"></script>
+    <div id="cupom">
+      <div id="cupom-conteudo">
+        <!-- conteúdo do pedido gerado pelo JS -->
+      </div>
+
+      <div class="acoes">
+        <button onclick="imprimirPedido()" class="btn imprimir">
+          🖨️ Imprimir
+        </button>
+
+        <button class="btn preparo">
+          🍳 Em preparo
+        </button>
+
+        <button class="btn finalizar">
+          ✅ Finalizar
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="painel.js"></script>
 </body>
 </html>
