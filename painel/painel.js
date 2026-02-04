@@ -1,127 +1,152 @@
-/* =======================
+/* ======================
    PAINEL – DANBURGERS
-======================= */
+====================== */
 
-/* ELEMENTOS */
 const listaPedidosEl = document.getElementById("lista-pedidos");
 const cupom = document.getElementById("cupom");
 const cupomConteudo = document.getElementById("cupom-conteudo");
 
-/* ESTADO */
 let pedidoAtual = null;
 
-/* =======================
-   BUSCAR PEDIDOS
-======================= */
+/* ======================
+   CARREGAR PEDIDOS
+====================== */
 async function carregarPedidos() {
   try {
-    const res = await fetch("/api/pedidos"); // mantém sua rota
+    const res = await fetch("/api/pedidos");
+    if (!res.ok) throw new Error("Erro ao buscar pedidos");
+
     const pedidos = await res.json();
 
     listaPedidosEl.innerHTML = "";
 
-    pedidos.forEach(pedido => {
+    pedidos.forEach(p => {
       const div = document.createElement("div");
-      div.className = "pedido-card";
+      div.className = "pedido";
       div.innerHTML = `
-        <strong>Pedido #${pedido.id}</strong><br>
-        ${pedido.cliente}<br>
-        <span>R$ ${Number(pedido.total).toFixed(2)}</span><br>
-        <small class="novo">${pedido.status}</small>
+        <strong>${p.cliente}</strong><br>
+        Total: R$ ${Number(p.total).toFixed(2)}<br>
+        <small>Status: ${p.status}</small>
       `;
 
-      div.onclick = () => selecionarPedido(pedido, div);
+      div.onclick = () => selecionarPedido(p);
       listaPedidosEl.appendChild(div);
     });
-  } catch (err) {
-    console.error("Erro ao carregar pedidos", err);
+  } catch (e) {
+    console.error("Erro ao carregar pedidos:", e);
   }
 }
 
-/* =======================
+/* ======================
    SELECIONAR PEDIDO
-======================= */
-function selecionarPedido(pedido, card) {
+====================== */
+function selecionarPedido(pedido) {
   pedidoAtual = pedido;
-
-  document
-    .querySelectorAll(".pedido-card")
-    .forEach(c => c.classList.remove("ativo"));
-
-  card.classList.add("ativo");
-
   renderizarCupom(pedido);
 }
 
-/* =======================
+/* ======================
    CUPOM
-======================= */
-function renderizarCupom(pedido) {
-  let html = `
-🍔🍕 PEDIDO – DanBurgers 🍕🍔
-━━━━━━━━━━━━━━━━━━
+====================== */
+function renderizarCupom(p) {
+  let texto = `
+PEDIDO – DanBurgers
+-------------------
 
-Cliente: ${pedido.cliente}
-Telefone: ${pedido.telefone}
-Entrega: ${pedido.entrega}
+Cliente: ${p.cliente}
+Telefone: ${p.telefone}
+Entrega: ${p.entrega}
 `;
 
-  if (pedido.endereco) {
-    html += `Endereço: ${pedido.endereco}\n`;
-  }
+  if (p.endereco) texto += `Endereço: ${p.endereco}\n`;
 
-  html += `
-Pagamento: ${pedido.pagamento}
+  texto += `
+Pagamento: ${p.pagamento}
 `;
 
-  if (pedido.troco) {
-    html += `Troco para: R$ ${Number(pedido.troco).toFixed(2)}\n`;
+  if (p.troco !== null && p.troco !== undefined) {
+    texto += `Troco para: R$ ${Number(p.troco).toFixed(2)}\n`;
   }
 
-  html += `
+  texto += `
 Itens:
 `;
 
-  pedido.itens.forEach((item, i) => {
-    html += `${i + 1}. ${item.nome} - R$ ${Number(item.preco).toFixed(2)}\n`;
-  });
+  if (Array.isArray(p.itens)) {
+    p.itens.forEach((i, idx) => {
+      texto += `${idx + 1}. ${i.nome} - R$ ${Number(i.preco).toFixed(2)}\n`;
+    });
+  }
 
-  html += `
-Frete: R$ ${Number(pedido.frete || 0).toFixed(2)}
-Total: R$ ${Number(pedido.total).toFixed(2)}
+  texto += `
+Total: R$ ${Number(p.total).toFixed(2)}
 
 DanBurgers agradece!
 `;
 
-  cupomConteudo.innerHTML = html.replace(/\n/g, "<br>");
+  cupomConteudo.innerHTML = texto.replace(/\n/g, "<br>");
+  cupom.style.display = "block";
 }
 
-/* =======================
-   IMPRIMIR (CORRIGIDO)
-======================= */
+/* ======================
+   IMPRIMIR
+====================== */
 window.imprimirPedido = function () {
   if (!pedidoAtual) {
-    alert("Selecione um pedido primeiro");
+    alert("Selecione um pedido");
     return;
   }
 
-  cupom.style.display = "block";
-
-  /* DELAY OBRIGATÓRIO PRA TÉRMICA */
+  // Delay obrigatório para impressora térmica
   setTimeout(() => {
     window.print();
-
-    /* opcional: esconder depois */
-    setTimeout(() => {
-      cupom.style.display = "block";
-    }, 500);
   }, 300);
 };
 
-/* =======================
-   INICIAR
-======================= */
-carregarPedidos();
+/* ======================
+   RELATÓRIO DIÁRIO
+====================== */
+window.relatorioDiario = async function () {
+  try {
+    const res = await fetch("/api/relatorio/diario");
+    if (!res.ok) throw new Error("Erro no relatório diário");
 
-/* ATUALIZA A CADA 5s */
+    const dados = await res.json();
+
+    alert(
+      `Relatório Diário\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
+        dados.total
+      ).toFixed(2)}`
+    );
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao gerar relatório diário");
+  }
+};
+
+/* ======================
+   RELATÓRIO MENSAL
+====================== */
+window.relatorioMensal = async function () {
+  try {
+    const res = await fetch("/api/relatorio/mensal");
+    if (!res.ok) throw new Error("Erro no relatório mensal");
+
+    const dados = await res.json();
+
+    alert(
+      `Relatório Mensal\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
+        dados.total
+      ).toFixed(2)}`
+    );
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao gerar relatório mensal");
+  }
+};
+
+/* ======================
+   START
+====================== */
+carregarPedidos();
 setInterval(carregarPedidos, 5000);
