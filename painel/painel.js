@@ -2,8 +2,23 @@ import { supabase } from "../js/supabase.js";
 
 const lista = document.getElementById("lista-pedidos");
 const som = document.getElementById("som-pedido");
+const botaoSom = document.getElementById("ativar-som");
 
 let pedidosImpressos = new Set();
+let somLiberado = false;
+
+/* LIBERAR SOM (1 CLIQUE) */
+botaoSom.onclick = () => {
+  som.play()
+    .then(() => {
+      somLiberado = true;
+      botaoSom.innerText = "🔔 Som ativado";
+      botaoSom.disabled = true;
+    })
+    .catch(() => {
+      alert("Clique novamente para ativar o som");
+    });
+};
 
 /* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
@@ -38,15 +53,15 @@ async function carregarPedidos() {
   });
 }
 
-/* SOM */
+/* TOCAR SOM */
 function tocarSom() {
-  if (som) {
+  if (som && somLiberado) {
     som.currentTime = 0;
     som.play().catch(() => {});
   }
 }
 
-/* IMPRIME AUTOMÁTICO */
+/* IMPRIMIR AUTOMÁTICO */
 async function imprimirPedido(pedido) {
   let texto = `
 Pedido #${pedido.id}
