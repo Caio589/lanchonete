@@ -257,7 +257,7 @@ window.enviarPedido = async function () {
   mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
   mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
-  const whatsapp = "5511963266825";
+  const whatsapp = "5577981184890";
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
 
   await supabase.from("pedidos").insert([
