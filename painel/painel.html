@@ -22,18 +22,16 @@
     button {
       padding: 10px;
       cursor: pointer;
+      margin-top: 6px;
     }
 
-    /* IMPRESSÃO 80mm */
     @media print {
       body * {
         visibility: hidden;
       }
-
       #cupom, #cupom * {
         visibility: visible;
       }
-
       #cupom {
         position: absolute;
         left: 0;
@@ -46,15 +44,13 @@
 </head>
 <body>
 
-<h2>🧾 Pedidos novos</h2>
+<h2>🧾 Pedidos</h2>
 
-<button id="ativar-som" style="margin-bottom:15px">
-  🔊 Ativar som de pedidos
-</button>
+<button id="ativar-som">🔊 Ativar som de pedidos</button>
+<button onclick="gerarRelatorioMensal()">📊 Relatório Mensal</button>
 
 <div id="lista-pedidos"></div>
 
-<!-- CUPOM -->
 <div id="cupom" style="display:none">
   <h3 style="text-align:center">DanBurgers</h3>
   <hr>
