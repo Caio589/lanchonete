@@ -87,33 +87,32 @@ function renderizarProdutos() {
     return;
   }
 
-  filtrados.forEach(p => {
-    // 👉 PIZZA (P / M / G)
-    if (p.categoria && p.categoria.toLowerCase() === "pizza") {
-      renderizarPizza(p);
-      return;
-    }
+ if (p.categoria.toLowerCase() === "pizza") {
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <h3>${p.nome}</h3>
+    <p>${p.descricao || ""}</p>
 
-    // 👉 PRODUTO NORMAL
-    if (p.preco == null) return;
+    <button class="btn btn-add">🍕 P</button>
+    <button class="btn btn-add">🍕 M</button>
+    <button class="btn btn-add">🍕 G</button>
 
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <h3>${p.nome}</h3>
-      <p>${p.descricao || ""}</p>
-      <strong>R$ ${Number(p.preco).toFixed(2)}</strong>
-      <button class="btn btn-add">+ Adicionar</button>
-    `;
+    <button class="btn btn-add">🍕 2 Sabores</button>
+  `;
 
-    div.querySelector("button").onclick = () => {
-      addCarrinho(p.nome, Number(p.preco));
-    };
+  const btns = div.querySelectorAll("button");
 
-    listaProdutos.appendChild(div);
-  });
+  btns[0].onclick = () => addCarrinho(`${p.nome} (P)`, p.preco_p);
+  btns[1].onclick = () => addCarrinho(`${p.nome} (M)`, p.preco_m);
+  btns[2].onclick = () => addCarrinho(`${p.nome} (G)`, p.preco_g);
+
+  btns[3].onclick = () => abrirPizzaDoisSabores("m");
+
+  listaProdutos.appendChild(div);
+  return;
 }
-
+   
 /* ===== PIZZA ===== */
 function renderizarPizza(p) {
   const precoP = Number(p.preco_p);
