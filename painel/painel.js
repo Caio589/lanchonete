@@ -1,24 +1,42 @@
 import { supabase } from "../js/supabase.js";
 
 const lista = document.getElementById("lista-pedidos");
-const som = document.getElementById("som-pedido");
 const botaoSom = document.getElementById("ativar-som");
 
 let pedidosImpressos = new Set();
+
+/* ===== SOM (WEB AUDIO API) ===== */
+let audioContext = null;
 let somLiberado = false;
 
 /* LIBERAR SOM (1 CLIQUE) */
 botaoSom.onclick = () => {
-  som.play()
-    .then(() => {
-      somLiberado = true;
-      botaoSom.innerText = "🔔 Som ativado";
-      botaoSom.disabled = true;
-    })
-    .catch(() => {
-      alert("Clique novamente para ativar o som");
-    });
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  somLiberado = true;
+  botaoSom.innerText = "🔔 Som ativado";
+  botaoSom.disabled = true;
+
+  // Beep de confirmação
+  tocarSom();
 };
+
+/* TOCAR SOM */
+function tocarSom() {
+  if (!somLiberado || !audioContext) return;
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.25);
+}
 
 /* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
@@ -51,14 +69,6 @@ async function carregarPedidos() {
     `;
     lista.appendChild(div);
   });
-}
-
-/* TOCAR SOM */
-function tocarSom() {
-  if (som && somLiberado) {
-    som.currentTime = 0;
-    som.play().catch(() => {});
-  }
 }
 
 /* IMPRIMIR AUTOMÁTICO */
