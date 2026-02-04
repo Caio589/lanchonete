@@ -36,17 +36,27 @@ async function iniciar() {
   renderizarProdutos();
   renderizarCarrinho();
 }
-
 iniciar();
 
 /* ======================
-   LISTENERS (CORREÇÃO)
+   LISTENERS (TEMPO REAL)
 ====================== */
-if (entregaSelect) {
-  entregaSelect.addEventListener("change", () => {
+if (entregaSelect) entregaSelect.addEventListener("change", renderizarCarrinho);
+
+if (pagamentoSelect) {
+  pagamentoSelect.addEventListener("change", () => {
+    if (pagamentoSelect.value === "dinheiro") {
+      trocoInput.style.display = "block";
+    } else {
+      trocoInput.style.display = "none";
+      trocoInput.value = "";
+    }
     renderizarCarrinho();
   });
 }
+
+[trocoInput, nomeInput, telefoneInput, enderecoInput]
+  .forEach(el => el && el.addEventListener("input", renderizarCarrinho));
 
 /* ======================
    CATEGORIAS
@@ -109,7 +119,7 @@ function renderizarProdutos() {
 }
 
 /* ======================
-   CARRINHO
+   CARRINHO / RESUMO
 ====================== */
 function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
@@ -130,9 +140,15 @@ function renderizarCarrinho() {
   frete = entregaSelect && entregaSelect.value === "fora" ? 7 : 0;
 
   if (frete > 0) {
-    const freteDiv = document.createElement("div");
-    freteDiv.innerText = `🚚 Frete — R$ ${frete.toFixed(2)}`;
-    pedidoEl.appendChild(freteDiv);
+    const f = document.createElement("div");
+    f.innerText = `🚚 Frete — R$ ${frete.toFixed(2)}`;
+    pedidoEl.appendChild(f);
+  }
+
+  if (pagamentoSelect.value === "dinheiro" && trocoInput.value) {
+    const t = document.createElement("div");
+    t.innerText = `💵 Troco para — R$ ${Number(trocoInput.value).toFixed(2)}`;
+    pedidoEl.appendChild(t);
   }
 
   const total = subtotal + frete;
@@ -148,22 +164,22 @@ window.enviarPedido = function () {
     return;
   }
 
-  const nome = nomeInput?.value || "";
-  const telefone = telefoneInput?.value || "";
-  const endereco = enderecoInput?.value || "";
-  const pagamento = pagamentoSelect?.value || "";
-  const troco = trocoInput?.value || "";
-  const entrega = entregaSelect?.value || "retirada";
+  const nome = nomeInput.value.trim();
+  const telefone = telefoneInput.value.trim();
+  const endereco = enderecoInput.value.trim();
+  const pagamento = pagamentoSelect.value;
+  const troco = trocoInput.value;
+  const entrega = entregaSelect.value;
 
   let texto =
 `🍔🍕 *PEDIDO – DanBurgers* 🍕🍔
 ━━━━━━━━━━━━━━━━━━
 
-👤 *Cliente:* ${nome}
-📞 *Telefone:* ${telefone}
+👤 *Cliente:* ${nome || "-"}
+📞 *Telefone:* ${telefone || "-"}
 📍 *Entrega:* ${entrega === "fora" ? "Fora da cidade" : "Retirada no local"}
 
-💳 *Pagamento:* ${pagamento === "dinheiro" ? "Dinheiro" : pagamento}
+${endereco ? `🏠 *Endereço:* ${endereco}\n` : ""}💳 *Pagamento:* ${pagamento === "dinheiro" ? "Dinheiro" : pagamento}
 ${pagamento === "dinheiro" && troco ? `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}\n` : ""}
 🛒 *Itens do pedido:*
 `;
@@ -182,8 +198,6 @@ ${pagamento === "dinheiro" && troco ? `💵 *Troco para:* R$ ${Number(troco).toF
 💰 *Total:* R$ ${total.toFixed(2)}
 🔥 *DanBurgers agradece!*`;
 
-  const whatsapp = "5511963266825";
-  const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`;
-
-  window.open(url, "_blank");
+  const whatsapp = "5511963266825"; // SEU NÚMERO
+  window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`, "_blank");
 };
