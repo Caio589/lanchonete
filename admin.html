@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>ADM - DanBurgers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>⚙️ ADM DanBurgers</h1>
+
+    <!-- CATEGORIAS -->
+    <div class="card">
+      <h3>📂 Categorias</h3>
+      <input id="novaCategoria" placeholder="Nome da categoria">
+      <button class="btn" id="btnCriarCategoria">Adicionar categoria</button>
+      <div id="lista-categorias"></div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="card">
+      <h3>🍔 Produto</h3>
+
+      <input id="nomeProduto" placeholder="Nome do produto">
+      <input id="descricaoProduto" placeholder="Descrição">
+
+      <select id="categoriaProduto">
+        <option value="">Selecione a categoria</option>
+      </select>
+
+      <!-- PREÇO NORMAL -->
+      <div id="campo-preco-normal">
+        <input id="precoProduto" type="number" placeholder="Preço">
+      </div>
+
+      <!-- PREÇOS PIZZA -->
+      <div id="campo-pizza" style="display:none">
+        <input id="precoP" type="number" placeholder="Preço Pizza P">
+        <input id="precoM" type="number" placeholder="Preço Pizza M">
+        <input id="precoG" type="number" placeholder="Preço Pizza G">
+      </div>
+
+      <button class="btn" id="btnCriarProduto">Adicionar produto</button>
+
+      <div id="lista-produtos"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
