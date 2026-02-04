@@ -19,6 +19,11 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
 
+    button {
+      padding: 10px;
+      cursor: pointer;
+    }
+
     /* IMPRESSÃO 80mm */
     @media print {
       body * {
@@ -42,6 +47,11 @@
 <body>
 
 <h2>🧾 Pedidos novos</h2>
+
+<button id="ativar-som" style="margin-bottom:15px">
+  🔊 Ativar som de pedidos
+</button>
+
 <div id="lista-pedidos"></div>
 
 <!-- SOM -->
