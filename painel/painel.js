@@ -17,7 +17,6 @@ async function carregarPedidos() {
     if (!res.ok) throw new Error("Erro ao buscar pedidos");
 
     const pedidos = await res.json();
-
     listaPedidosEl.innerHTML = "";
 
     pedidos.forEach(p => {
@@ -46,7 +45,7 @@ function selecionarPedido(pedido) {
 }
 
 /* ======================
-   CUPOM
+   RENDER CUPOM
 ====================== */
 function renderizarCupom(p) {
   let texto = `
@@ -86,10 +85,15 @@ DanBurgers agradece!
 
   cupomConteudo.innerHTML = texto.replace(/\n/g, "<br>");
   cupom.style.display = "block";
+
+  /* IMPRESSÃO AUTOMÁTICA */
+  setTimeout(() => {
+    window.print();
+  }, 300);
 }
 
 /* ======================
-   IMPRIMIR
+   BOTÃO IMPRIMIR (BACKUP)
 ====================== */
 window.imprimirPedido = function () {
   if (!pedidoAtual) {
@@ -97,7 +101,6 @@ window.imprimirPedido = function () {
     return;
   }
 
-  // Delay obrigatório para impressora térmica
   setTimeout(() => {
     window.print();
   }, 300);
@@ -107,42 +110,28 @@ window.imprimirPedido = function () {
    RELATÓRIO DIÁRIO
 ====================== */
 window.relatorioDiario = async function () {
-  try {
-    const res = await fetch("/api/relatorio/diario");
-    if (!res.ok) throw new Error("Erro no relatório diário");
+  const res = await fetch("/api/relatorio/diario");
+  const dados = await res.json();
 
-    const dados = await res.json();
-
-    alert(
-      `Relatório Diário\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
-        dados.total
-      ).toFixed(2)}`
-    );
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao gerar relatório diário");
-  }
+  alert(
+    `Relatório Diário\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
+      dados.total
+    ).toFixed(2)}`
+  );
 };
 
 /* ======================
    RELATÓRIO MENSAL
 ====================== */
 window.relatorioMensal = async function () {
-  try {
-    const res = await fetch("/api/relatorio/mensal");
-    if (!res.ok) throw new Error("Erro no relatório mensal");
+  const res = await fetch("/api/relatorio/mensal");
+  const dados = await res.json();
 
-    const dados = await res.json();
-
-    alert(
-      `Relatório Mensal\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
-        dados.total
-      ).toFixed(2)}`
-    );
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao gerar relatório mensal");
-  }
+  alert(
+    `Relatório Mensal\nPedidos: ${dados.quantidade}\nTotal: R$ ${Number(
+      dados.total
+    ).toFixed(2)}`
+  );
 };
 
 /* ======================
