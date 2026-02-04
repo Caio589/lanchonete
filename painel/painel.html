@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Painel – DanBurgers</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f2f2f2;
       padding: 20px;
-    }
-
-    h2 {
-      margin-top: 0;
     }
 
     .pedido {
@@ -30,11 +27,12 @@
       width: 80mm;
     }
 
-    button {
+    #btn-imprimir {
       padding: 10px;
-      margin: 5px 0;
+      margin-top: 10px;
       width: 100%;
       cursor: pointer;
+      font-size: 16px;
     }
 
     @media print {
@@ -63,17 +61,39 @@
 <hr>
 
 <h2>Pedido selecionado</h2>
+
 <div id="cupom">
   <div id="cupom-conteudo"></div>
 
-  <button onclick="imprimirPedido()">🖨️ Imprimir</button>
+  <!-- botão ainda existe (segurança) -->
+  <button id="btn-imprimir" onclick="imprimirPedido()">
+    🖨️ Imprimir pedido
+  </button>
 </div>
 
-<hr>
-
-<button onclick="relatorioDiario()">📊 Relatório Diário</button>
-<button onclick="relatorioMensal()">📆 Relatório Mensal</button>
-
 <script src="painel.js"></script>
+
+<script>
+  /*
+    IMPRESSÃO AUTOMÁTICA
+    Sempre que um pedido for renderizado no cupom,
+    o painel já chama a impressão.
+  */
+
+  const observer = new MutationObserver(() => {
+    const cupom = document.getElementById("cupom");
+    if (cupom && cupom.style.display === "block") {
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    }
+  });
+
+  observer.observe(document.getElementById("cupom"), {
+    attributes: true,
+    attributeFilter: ["style"]
+  });
+</script>
+
 </body>
 </html>
