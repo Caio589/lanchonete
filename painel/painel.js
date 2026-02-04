@@ -5,73 +5,85 @@ const botaoSom = document.getElementById("ativar-som");
 
 let pedidosImpressos = new Set();
 
-/* ===== SOM (WEB AUDIO API) ===== */
+/* ===== SOM ===== */
 let audioContext = null;
 let somLiberado = false;
 
-/* LIBERAR SOM (1 CLIQUE) */
 botaoSom.onclick = () => {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   somLiberado = true;
   botaoSom.innerText = "🔔 Som ativado";
   botaoSom.disabled = true;
-
-  // Beep de confirmação
   tocarSom();
 };
 
-/* TOCAR SOM */
 function tocarSom() {
   if (!somLiberado || !audioContext) return;
 
-  const oscillator = audioContext.createOscillator();
+  const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
 
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(880, audioContext.currentTime);
   gain.gain.setValueAtTime(0.2, audioContext.currentTime);
 
-  oscillator.connect(gain);
+  osc.connect(gain);
   gain.connect(audioContext.destination);
 
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + 0.25);
+  osc.start();
+  osc.stop(audioContext.currentTime + 0.25);
 }
 
-/* BUSCA PEDIDOS NOVOS */
+/* ===== PEDIDOS ===== */
 async function carregarPedidos() {
   const { data } = await supabase
     .from("pedidos")
     .select("*")
-    .eq("status", "novo")
+    .in("status", ["novo", "preparando"])
     .order("created_at", { ascending: true });
 
   if (!data || data.length === 0) {
-    lista.innerHTML = "<p>Nenhum pedido novo</p>";
+    lista.innerHTML = "<p>Nenhum pedido</p>";
     return;
   }
 
   lista.innerHTML = "";
 
   data.forEach(pedido => {
-    if (!pedidosImpressos.has(pedido.id)) {
+    const div = document.createElement("div");
+    div.className = "pedido";
+
+    div.innerHTML = `
+      <strong>Pedido #${pedido.id}</strong><br>
+      Cliente: ${pedido.cliente}<br>
+      Total: R$ ${pedido.total.toFixed(2)}<br>
+      Status: ${pedido.status}
+    `;
+
+    if (pedido.status === "novo" && !pedidosImpressos.has(pedido.id)) {
       pedidosImpressos.add(pedido.id);
       tocarSom();
       imprimirPedido(pedido);
     }
 
-    const div = document.createElement("div");
-    div.className = "pedido";
-    div.innerHTML = `
-      <strong>Pedido #${pedido.id}</strong><br>
-      Cliente: ${pedido.cliente}<br>
-      Total: R$ ${pedido.total.toFixed(2)}
-    `;
+    const btnFinalizar = document.createElement("button");
+    btnFinalizar.innerText = "✅ Finalizar pedido";
+    btnFinalizar.onclick = async () => {
+      await supabase
+        .from("pedidos")
+        .update({ status: "finalizado" })
+        .eq("id", pedido.id);
+
+      div.remove();
+    };
+
+    div.appendChild(document.createElement("br"));
+    div.appendChild(btnFinalizar);
     lista.appendChild(div);
   });
 }
 
-/* IMPRIMIR AUTOMÁTICO */
+/* ===== IMPRESSÃO ===== */
 async function imprimirPedido(pedido) {
   let texto = `
 Pedido #${pedido.id}
@@ -99,13 +111,43 @@ Total: R$ ${pedido.total.toFixed(2)}
 
   cupom.style.display = "none";
 
-  /* MARCA COMO IMPRESSO */
   await supabase
     .from("pedidos")
-    .update({ status: "impresso" })
+    .update({ status: "preparando" })
     .eq("id", pedido.id);
 }
 
-/* ATUALIZA A CADA 3s */
+/* ===== RELATÓRIO MENSAL ===== */
+async function gerarRelatorioMensal() {
+  const inicio = new Date();
+  inicio.setDate(1);
+  inicio.setHours(0, 0, 0, 0);
+
+  const fim = new Date();
+  fim.setMonth(fim.getMonth() + 1);
+  fim.setDate(0);
+  fim.setHours(23, 59, 59, 999);
+
+  const { data } = await supabase
+    .from("pedidos")
+    .select("total")
+    .eq("status", "finalizado")
+    .gte("created_at", inicio.toISOString())
+    .lte("created_at", fim.toISOString());
+
+  let total = 0;
+  data.forEach(p => total += p.total);
+
+  alert(`
+📊 RELATÓRIO MENSAL
+Pedidos: ${data.length}
+Faturamento: R$ ${total.toFixed(2)}
+Ticket médio: R$ ${(total / data.length || 0).toFixed(2)}
+`);
+}
+
+window.gerarRelatorioMensal = gerarRelatorioMensal;
+
+/* LOOP */
 carregarPedidos();
 setInterval(carregarPedidos, 3000);
