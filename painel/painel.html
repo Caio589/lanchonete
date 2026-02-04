@@ -1,50 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Painel – DanBurgers</title>
-  <link rel="stylesheet" href="painel.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .pedido {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    #cupom {
+      display: none;
+      background: #fff;
+      padding: 10px;
+      margin-top: 20px;
+      width: 80mm;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #cupom, #cupom * {
+        visibility: visible;
+      }
+
+      #cupom {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topo">
-  <div class="logo">🍔 <strong>DanBurgers</strong></div>
-  <div class="status">🟢 Online</div>
-</header>
+<h2>Pedidos</h2>
+<div id="lista-pedidos"></div>
 
-<main class="container">
+<hr>
 
-  <!-- LISTA DE PEDIDOS -->
-  <section class="lista-pedidos" id="lista-pedidos">
-    <!-- cards de pedidos entram aqui pelo JS -->
-  </section>
+<h2>Pedido selecionado</h2>
+<div id="cupom">
+  <div id="cupom-conteudo"></div>
 
-  <!-- DETALHES DO PEDIDO -->
-  <section class="detalhe-pedido">
-    <h2>Detalhes do pedido</h2>
+  <button onclick="imprimirPedido()">🖨️ Imprimir</button>
+</div>
 
-    <div id="cupom">
-      <div id="cupom-conteudo">
-        <!-- conteúdo do pedido gerado pelo JS -->
-      </div>
+<hr>
 
-      <div class="acoes">
-        <button onclick="imprimirPedido()" class="btn imprimir">
-          🖨️ Imprimir
-        </button>
-
-        <button class="btn preparo">
-          🍳 Em preparo
-        </button>
-
-        <button class="btn finalizar">
-          ✅ Finalizar
-        </button>
-      </div>
-    </div>
-  </section>
-
-</main>
+<button onclick="relatorioDiario()">📊 Relatório Diário</button>
+<button onclick="relatorioMensal()">📆 Relatório Mensal</button>
 
 <script src="painel.js"></script>
 </body>
