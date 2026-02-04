@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Painel da Lanchonete</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
       padding: 20px;
     }
+
     .pedido {
       background: #fff;
       padding: 12px;
@@ -16,20 +18,17 @@
       border-radius: 6px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    button {
-      padding: 8px 12px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
 
     /* IMPRESSÃO 80mm */
     @media print {
       body * {
         visibility: hidden;
       }
+
       #cupom, #cupom * {
         visibility: visible;
       }
+
       #cupom {
         position: absolute;
         left: 0;
@@ -44,6 +43,9 @@
 
 <h2>🧾 Pedidos novos</h2>
 <div id="lista-pedidos"></div>
+
+<!-- SOM -->
+<audio id="som-pedido" src="som.mp3" preload="auto"></audio>
 
 <!-- CUPOM -->
 <div id="cupom" style="display:none">
