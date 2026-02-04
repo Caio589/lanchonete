@@ -153,3 +153,11 @@ botaoRelatorio.onclick = gerarRelatorioMensal;
 /* LOOP */
 carregarPedidos();
 setInterval(carregarPedidos, 3000);
+// GARANTIA DE BOTÃO (mesmo com module)
+document.addEventListener("DOMContentLoaded", () => {
+  const botaoRelatorioSeguro = document.getElementById("btn-relatorio");
+
+  if (botaoRelatorioSeguro) {
+    botaoRelatorioSeguro.onclick = gerarRelatorioMensal;
+  }
+});
