@@ -105,12 +105,17 @@ Total: R$ ${pedido.total.toFixed(2)}
   const cupom = document.getElementById("cupom");
   const conteudo = document.getElementById("cupom-conteudo");
 
-  conteudo.innerHTML = texto.replace(/\n/g, "<br>");
-  cupom.style.display = "block";
+ conteudo.innerHTML = texto.replace(/\n/g, "<br>");
+cupom.style.display = "block";
 
+/* GARANTE RENDERIZAÇÃO ANTES DE IMPRIMIR */
+setTimeout(() => {
   window.print();
 
-  cupom.style.display = "none";
+  setTimeout(() => {
+    cupom.style.display = "none";
+  }, 500);
+}, 300);
 
   await supabase
     .from("pedidos")
