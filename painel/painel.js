@@ -2,10 +2,11 @@ import { supabase } from "../js/supabase.js";
 
 const lista = document.getElementById("lista-pedidos");
 const botaoSom = document.getElementById("ativar-som");
+const botaoRelatorio = document.getElementById("btn-relatorio");
 
 let pedidosImpressos = new Set();
 
-/* ===== SOM ===== */
+/* ===== SOM (WEB AUDIO) ===== */
 let audioContext = null;
 let somLiberado = false;
 
@@ -24,8 +25,8 @@ function tocarSom() {
   const gain = audioContext.createGain();
 
   osc.type = "sine";
-  osc.frequency.setValueAtTime(880, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+  osc.frequency.value = 880;
+  gain.gain.value = 0.2;
 
   osc.connect(gain);
   gain.connect(audioContext.destination);
@@ -146,7 +147,8 @@ Ticket médio: R$ ${(total / data.length || 0).toFixed(2)}
 `);
 }
 
-window.gerarRelatorioMensal = gerarRelatorioMensal;
+/* BOTÃO RELATÓRIO */
+botaoRelatorio.onclick = gerarRelatorioMensal;
 
 /* LOOP */
 carregarPedidos();
