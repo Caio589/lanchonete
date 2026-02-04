@@ -5,6 +5,8 @@ console.log("CARDÁPIO INICIADO");
 /* ELEMENTOS */
 const listaProdutos = document.getElementById("lista-produtos");
 const categoriasEl = document.getElementById("categorias");
+const pedidoEl = document.getElementById("meu-pedido");
+const totalEl = document.getElementById("total-pedido");
 
 /* ESTADO */
 let produtos = [];
@@ -18,16 +20,16 @@ async function iniciar() {
 
   renderizarCategorias(categorias);
   renderizarProdutos();
+  renderizarCarrinho();
 }
 
+/* CATEGORIAS */
 function renderizarCategorias(categorias) {
   categoriasEl.innerHTML = "";
 
   criarBotaoCategoria("Todos");
 
-  categorias.forEach(c => {
-    criarBotaoCategoria(c.nome);
-  });
+  categorias.forEach(c => criarBotaoCategoria(c.nome));
 }
 
 function criarBotaoCategoria(nome) {
@@ -41,6 +43,7 @@ function criarBotaoCategoria(nome) {
   categoriasEl.appendChild(btn);
 }
 
+/* PRODUTOS */
 function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
@@ -67,7 +70,6 @@ function renderizarProdutos() {
       <h3>${p.nome}</h3>
       <p>${p.descricao || ""}</p>
       <strong>R$ ${Number(p.preco).toFixed(2)}</strong>
-
       <button class="btn btn-add">➕ Adicionar</button>
     `;
 
@@ -79,14 +81,31 @@ function renderizarProdutos() {
   });
 }
 
-/* CARRINHO (mínimo só pra funcionar) */
+/* CARRINHO */
 function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
-  console.log("Carrinho:", carrinho);
+  renderizarCarrinho();
 }
 
-iniciar();
+function renderizarCarrinho() {
+  if (!pedidoEl) return;
 
+  pedidoEl.innerHTML = "";
+  let total = 0;
+
+  carrinho.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.innerText = `${i + 1}. ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+    pedidoEl.appendChild(div);
+    total += item.preco;
+  });
+
+  if (totalEl) {
+    totalEl.innerText = `Total: R$ ${total.toFixed(2)}`;
+  }
+}
+
+/* FINALIZAR PEDIDO (WHATSAPP) */
 window.enviarPedido = function () {
   if (carrinho.length === 0) {
     alert("Carrinho vazio");
@@ -97,15 +116,17 @@ window.enviarPedido = function () {
   let total = 0;
 
   carrinho.forEach((item, i) => {
-    texto += `${i + 1}️⃣ ${item.nome} – R$ ${item.preco.toFixed(2)}\n`;
+    texto += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}\n`;
     total += item.preco;
   });
 
   texto += `\n💰 *Total:* R$ ${total.toFixed(2)}`;
   texto += `\n\n📍 Pedido feito pelo cardápio digital`;
 
-  const telefone = "5511963266825"; // SEU WHATSAPP
+  const telefone = "5511963266825"; // seu WhatsApp
   const url = `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`;
 
   window.open(url, "_blank");
 };
+
+iniciar();
