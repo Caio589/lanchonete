@@ -2,18 +2,32 @@ import { buscarProdutos, buscarCategorias } from "./data.js";
 
 console.log("CARDÁPIO INICIADO");
 
-/* ELEMENTOS */
+/* ======================
+   ELEMENTOS
+====================== */
 const listaProdutos = document.getElementById("lista-produtos");
 const categoriasEl = document.getElementById("categorias");
 const pedidoEl = document.getElementById("meu-pedido");
 const totalEl = document.getElementById("total-pedido");
 
-/* ESTADO */
+const nomeInput = document.getElementById("nome");
+const telefoneInput = document.getElementById("telefone");
+const enderecoInput = document.getElementById("endereco");
+const entregaSelect = document.getElementById("entrega");
+const pagamentoSelect = document.getElementById("pagamento");
+const trocoInput = document.getElementById("troco");
+
+/* ======================
+   ESTADO
+====================== */
 let produtos = [];
 let categoriaAtual = "Todos";
 let carrinho = [];
+let frete = 0;
 
-/* START */
+/* ======================
+   START
+====================== */
 async function iniciar() {
   produtos = await buscarProdutos();
   const categorias = await buscarCategorias();
@@ -23,12 +37,14 @@ async function iniciar() {
   renderizarCarrinho();
 }
 
-/* CATEGORIAS */
+iniciar();
+
+/* ======================
+   CATEGORIAS
+====================== */
 function renderizarCategorias(categorias) {
   categoriasEl.innerHTML = "";
-
   criarBotaoCategoria("Todos");
-
   categorias.forEach(c => criarBotaoCategoria(c.nome));
 }
 
@@ -43,7 +59,9 @@ function criarBotaoCategoria(nome) {
   categoriasEl.appendChild(btn);
 }
 
-/* PRODUTOS */
+/* ======================
+   PRODUTOS
+====================== */
 function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
@@ -81,52 +99,76 @@ function renderizarProdutos() {
   });
 }
 
-/* CARRINHO */
+/* ======================
+   CARRINHO
+====================== */
 function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
   renderizarCarrinho();
 }
 
 function renderizarCarrinho() {
-  if (!pedidoEl) return;
-
   pedidoEl.innerHTML = "";
-  let total = 0;
+  let subtotal = 0;
 
   carrinho.forEach((item, i) => {
     const div = document.createElement("div");
-    div.innerText = `${i + 1}. ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+    div.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
     pedidoEl.appendChild(div);
-    total += item.preco;
+    subtotal += item.preco;
   });
 
-  if (totalEl) {
-    totalEl.innerText = `Total: R$ ${total.toFixed(2)}`;
-  }
+  frete = entregaSelect && entregaSelect.value === "fora" ? 7 : 0;
+  const total = subtotal + frete;
+
+  totalEl.innerText = `Total: R$ ${total.toFixed(2)}`;
 }
 
-/* FINALIZAR PEDIDO (WHATSAPP) */
+/* ======================
+   WHATSAPP
+====================== */
 window.enviarPedido = function () {
   if (carrinho.length === 0) {
     alert("Carrinho vazio");
     return;
   }
 
-  let texto = "*🍔 PEDIDO – DanBurgers 🍔*\n\n";
-  let total = 0;
+  const nome = nomeInput?.value || "";
+  const telefone = telefoneInput?.value || "";
+  const endereco = enderecoInput?.value || "";
+  const pagamento = pagamentoSelect?.value || "";
+  const troco = trocoInput?.value || "";
+  const entrega = entregaSelect?.value || "retirada";
+
+  let texto =
+`🍔🍕 *PEDIDO – DanBurgers* 🍕🍔
+━━━━━━━━━━━━━━━━━━
+
+👤 *Cliente:* ${nome}
+📞 *Telefone:* ${telefone}
+📍 *Entrega:* ${entrega === "fora" ? "Fora da cidade" : "Retirada no local"}
+
+💳 *Pagamento:* ${pagamento === "dinheiro" ? "Dinheiro" : pagamento}
+${pagamento === "dinheiro" && troco ? `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}\n` : ""}
+🛒 *Itens do pedido:*
+`;
+
+  let subtotal = 0;
 
   carrinho.forEach((item, i) => {
     texto += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}\n`;
-    total += item.preco;
+    subtotal += item.preco;
   });
 
-  texto += `\n💰 *Total:* R$ ${total.toFixed(2)}`;
-  texto += `\n\n📍 Pedido feito pelo cardápio digital`;
+  const total = subtotal + frete;
 
-  const telefone = "5511963266825"; // seu WhatsApp
-  const url = `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`;
+  texto += `
+🚚 *Frete:* ${frete > 0 ? `R$ ${frete.toFixed(2)}` : "Grátis"}
+💰 *Total:* R$ ${total.toFixed(2)}
+🔥 *DanBurgers agradece!*`;
+
+  const whatsapp = "5511963266825"; // SEU NÚMERO
+  const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`;
 
   window.open(url, "_blank");
 };
-
-iniciar();
