@@ -45,7 +45,6 @@ iniciar();
 function renderizarCategorias(categorias) {
   categoriasEl.innerHTML = "";
   criarBotaoCategoria("Todos");
-
   categorias.forEach(c => criarBotaoCategoria(c.nome));
 }
 
@@ -81,6 +80,13 @@ function renderizarProdutos() {
   }
 
   filtrados.forEach(p => {
+    // 👉 PIZZA (P / M / G)
+    if (p.categoria && p.categoria.toLowerCase() === "pizza") {
+      renderizarPizza(p);
+      return;
+    }
+
+    // 👉 PRODUTO NORMAL
     if (p.preco == null) return;
 
     const div = document.createElement("div");
@@ -98,6 +104,33 @@ function renderizarProdutos() {
 
     listaProdutos.appendChild(div);
   });
+}
+
+/* ===== PIZZA ===== */
+function renderizarPizza(p) {
+  const precoP = Number(p.preco_p);
+  const precoM = Number(p.preco_m);
+  const precoG = Number(p.preco_g);
+
+  if (isNaN(precoP) || isNaN(precoM) || isNaN(precoG)) return;
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <h3>${p.nome}</h3>
+    <p>${p.descricao || ""}</p>
+
+    <button class="btn btn-add">🍕 P — R$ ${precoP.toFixed(2)}</button>
+    <button class="btn btn-add">🍕 M — R$ ${precoM.toFixed(2)}</button>
+    <button class="btn btn-add">🍕 G — R$ ${precoG.toFixed(2)}</button>
+  `;
+
+  const botoes = div.querySelectorAll("button");
+  botoes[0].onclick = () => addCarrinho(`${p.nome} (P)`, precoP);
+  botoes[1].onclick = () => addCarrinho(`${p.nome} (M)`, precoM);
+  botoes[2].onclick = () => addCarrinho(`${p.nome} (G)`, precoG);
+
+  listaProdutos.appendChild(div);
 }
 
 /* =======================
@@ -173,7 +206,6 @@ window.enviarPedido = async function () {
   carrinho.forEach(i => (subtotal += i.preco));
   const totalPedido = subtotal + frete;
 
-  /* ===== MONTA WHATSAPP ===== */
   let mensagem =
     "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
     "━━━━━━━━━━━━━━━━━━%0A%0A" +
@@ -204,7 +236,6 @@ window.enviarPedido = async function () {
   }
 
   mensagem += `%0A🛒 *Itens do pedido:*%0A`;
-
   carrinho.forEach((item, i) => {
     mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
   });
@@ -218,11 +249,9 @@ window.enviarPedido = async function () {
   mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
   mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
-  /* ===== WHATSAPP PRIMEIRO (ANTI-BLOQUEIO) ===== */
   const whatsapp = "5511963266825";
   window.open(`https://wa.me/${whatsapp}?text=${mensagem}`, "_blank");
 
-  /* ===== SALVA NO SUPABASE ===== */
   await supabase.from("pedidos").insert([
     {
       cliente: nome,
