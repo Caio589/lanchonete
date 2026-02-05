@@ -7,15 +7,14 @@
 </head>
 <body>
 
-<h2>Mesa <span id="mesa-numero"></span></h2>
+<h2>Mesa <span id="mesa"></span></h2>
 
-<button id="nova-comanda">
-  ➕ Nova Comanda
-</button>
+<button id="nova-comanda">➕ Nova Comanda</button>
 
 <script type="module">
-  document.getElementById("mesa-numero").innerText =
-    localStorage.getItem("mesaAtual");
+  const mesa = localStorage.getItem("mesaAtual");
+  if (!mesa) location.href = "mesas.html";
+  document.getElementById("mesa").innerText = mesa;
 </script>
 
 <script type="module" src="comanda.js"></script>
