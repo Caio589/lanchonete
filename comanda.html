@@ -12,22 +12,8 @@
 <button id="nova-comanda">➕ Nova Comanda</button>
 
 <script>
-  const container = document.getElementById("mesas");
-
-  container.innerHTML = "";
-
-  for (let mesa = 1; mesa <= 30; mesa++) {
-    const div = document.createElement("div");
-    div.className = "mesa";
-    div.textContent = "Mesa " + mesa;
-
-    div.addEventListener("click", () => {
-      localStorage.setItem("mesaAtual", mesa.toString());
-      window.location.href = "comanda.html";
-    });
-
-    container.appendChild(div);
-  }
+  const mesa = localStorage.getItem("mesaAtual");
+  document.getElementById("mesa").innerText = mesa;
 </script>
 
 <script type="module" src="comanda.js"></script>
