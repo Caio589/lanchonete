@@ -25,5 +25,5 @@ async function criarComanda() {
   }
 
   localStorage.setItem("comandaAtual", data.id);
-  window.location.href = "cardapio-mesa.html";
+  window.location.href = "index.html";
 }
