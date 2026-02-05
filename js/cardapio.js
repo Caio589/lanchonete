@@ -1,3 +1,8 @@
+const comandaAtual = localStorage.getItem("comandaAtual");
+
+if (!comandaAtual) {
+  alert("Comanda não encontrada");
+}
 import { supabase } from "./supabase.js";
 import { buscarProdutos, buscarCategorias } from "./data.js";
 
