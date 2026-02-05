@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Comanda</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h2>Mesa <span id="mesa-numero"></span></h2>
+
+<button id="nova-comanda">
+  ➕ Nova Comanda
+</button>
+
+<script type="module">
+  document.getElementById("mesa-numero").innerText =
+    localStorage.getItem("mesaAtual");
+</script>
+
+<script type="module" src="comanda.js"></script>
+</body>
+</html>
