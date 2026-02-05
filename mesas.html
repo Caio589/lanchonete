@@ -44,18 +44,20 @@
 
 <div class="mesas" id="mesas"></div>
 
-<script type="module">
+<script>
   const container = document.getElementById("mesas");
 
-  for (let i = 1; i <= 30; i++) {
+  container.innerHTML = "";
+
+  for (let mesa = 1; mesa <= 30; mesa++) {
     const div = document.createElement("div");
     div.className = "mesa";
-    div.innerText = `Mesa ${i}`;
+    div.textContent = "Mesa " + mesa;
 
-    div.onclick = () => {
-      localStorage.setItem("mesaAtual", i);
+    div.addEventListener("click", () => {
+      localStorage.setItem("mesaAtual", mesa.toString());
       window.location.href = "comanda.html";
-    };
+    });
 
     container.appendChild(div);
   }
