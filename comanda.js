@@ -1,3 +1,5 @@
+console.log("COMANDA.JS CARREGOU");
+
 import { supabase } from "./supabase.js";
 
 document.getElementById("nova-comanda").onclick = criarComanda;
