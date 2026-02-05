@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mesas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 15px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .mesas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .mesa {
+      background: #111;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .mesa:hover {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Selecione a Mesa</h2>
+
+<div class="mesas" id="mesas"></div>
+
+<script type="module">
+  const container = document.getElementById("mesas");
+
+  for (let i = 1; i <= 30; i++) {
+    const div = document.createElement("div");
+    div.className = "mesa";
+    div.innerText = `Mesa ${i}`;
+
+    div.onclick = () => {
+      localStorage.setItem("mesaAtual", i);
+      window.location.href = "comanda.html";
+    };
+
+    container.appendChild(div);
+  }
+</script>
+
+</body>
+</html>
