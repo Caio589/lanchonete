@@ -166,9 +166,19 @@ function renderizarPizza(p) {
 /* =======================
    CARRINHO
 ======================= */
-function addCarrinho(nome, preco) {
+async function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
   renderizarCarrinho();
+
+  // salva no banco ligado à comanda
+  await supabase.from("itens_comanda").insert([
+    {
+      comanda_id: comandaAtual,
+      produto_nome: nome,
+      quantidade: 1,
+      preco: preco
+    }
+  ]);
 }
 
 function renderizarCarrinho() {
