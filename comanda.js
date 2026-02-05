@@ -1,17 +1,10 @@
 import { supabase } from "./supabase.js";
 
-// pega a mesa escolhida
-const mesa = localStorage.getItem("mesaAtual");
-
-if (!mesa) {
-  alert("Mesa não selecionada");
-  window.location.href = "mesas.html";
-}
-
-// botão nova comanda
 document.getElementById("nova-comanda").onclick = criarComanda;
 
 async function criarComanda() {
+  const mesa = localStorage.getItem("mesaAtual");
+
   const { data, error } = await supabase
     .from("comandas")
     .insert([
@@ -29,9 +22,6 @@ async function criarComanda() {
     return;
   }
 
-  // salva a comanda atual
   localStorage.setItem("comandaAtual", data.id);
-
-  // vai para o cardápio da mesa
   window.location.href = "cardapio-mesa.html";
 }
