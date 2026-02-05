@@ -1,5 +1,20 @@
 import { supabase } from "../js/supabase.js";
 
+async function carregarItensComanda(comandaId) {
+  const { data, error } = await supabase
+    .from("itens_comanda")
+    .select("*")
+    .eq("comanda_id", comandaId)
+    .order("created_at");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  console.log("ITENS DA COMANDA:", data);
+}
+
 const lista = document.getElementById("lista-pedidos");
 const botaoSom = document.getElementById("ativar-som");
 
