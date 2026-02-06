@@ -25,15 +25,7 @@ let audioContext = null;
 let somLiberado = false;
 
 /* LIBERAR SOM (1 CLIQUE) */
-botaoSom.onclick = () => {
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  somLiberado = true;
-  botaoSom.innerText = "🔔 Som ativado";
-  botaoSom.disabled = true;
 
-  // Beep de confirmação
-  tocarSom();
-};
 
 /* TOCAR SOM */
 function tocarSom() {
