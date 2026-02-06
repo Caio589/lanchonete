@@ -1,3 +1,5 @@
+console.log("JS DA COMANDA CARREGADO");
+
 import { supabase } from "../js/supabase.js";
 
 const listaComandas = document.getElementById("lista-comandas");
