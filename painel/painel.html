@@ -1,78 +1,53 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel da Lanchonete</title>
+  <title>Painel – DanBurgers</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-    }
-
-    .pedido {
-      background: #fff;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    button {
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    /* IMPRESSÃO 80mm */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-
-      #cupom, #cupom * {
-        visibility: visible;
-      }
-
-      #cupom {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80mm;
-        font-size: 13px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-<h2>🧾 Pedidos novos</h2>
+  <h1>📊 Painel DanBurgers</h1>
 
-<button id="ativar-som" style="margin-bottom:15px">
-  🔊 Ativar som de pedidos
-</button>
+  <!-- ABAS -->
+  <div style="display:flex; gap:10px; margin-bottom:15px;">
+    <button onclick="mostrarDelivery()">📦 Delivery</button>
+    <button onclick="mostrarMesas()">🍽️ Mesas</button>
+  </div>
 
-<div id="lista-pedidos"></div>
+  <!-- DELIVERY -->
+  <section id="aba-delivery">
+    <h2>Pedidos Delivery</h2>
+    <div id="lista-pedidos">
+      <!-- JS delivery já usa isso -->
+    </div>
+  </section>
 
-<!-- CUPOM -->
-<div id="cupom" style="display:none">
-  <h3 style="text-align:center">DanBurgers</h3>
-  <hr>
-  <div id="cupom-conteudo"></div>
-</div>
+  <!-- MESAS -->
+  <section id="aba-mesas" style="display:none">
+    <h2>Comandas das Mesas</h2>
+    <div id="lista-comandas">
+      <!-- JS mesas vai usar isso -->
+    </div>
+  </section>
 
-<button onclick="mostrarDelivery()">📦 Delivery</button>
-<button onclick="mostrarMesas()">🍽️ Mesas</button>
+  <!-- JS DAS ABAS -->
+  <script>
+    function mostrarDelivery() {
+      document.getElementById("aba-delivery").style.display = "block";
+      document.getElementById("aba-mesas").style.display = "none";
+    }
 
-<div id="delivery">
-  <!-- delivery -->
-</div>
+    function mostrarMesas() {
+      document.getElementById("aba-delivery").style.display = "none";
+      document.getElementById("aba-mesas").style.display = "block";
+    }
+  </script>
 
-<div id="mesas" style="display:none">
-  <!-- mesas -->
-</div>
+  <!-- JS DO PAINEL -->
+  <script type="module" src="./js/painel-delivery.js"></script>
+  <script type="module" src="./js/painel-mesas.js"></script>
 
-<script type="module" src="./js/painel-delivery.js"></script>
-<script type="module" src="./js/painel-mesas.js"></script>
 </body>
 </html>
