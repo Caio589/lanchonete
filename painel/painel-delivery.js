@@ -99,8 +99,8 @@ Total: R$ ${pedido.total.toFixed(2)}
   const cupom = document.getElementById("cupom");
   const conteudo = document.getElementById("cupom-conteudo");
 
-  conteudo.innerHTML = texto.replace(/\n/g, "<br>");
-  cupom.style.display = "block";
+ const area = document.getElementById("area-impressao");
+area.innerHTML = htmlDoPedido;
 
   window.print();
 
