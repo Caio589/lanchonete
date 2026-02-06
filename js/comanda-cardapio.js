@@ -98,17 +98,16 @@ function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
   const filtrados =
-  categoriaAtual === "Todos"
-    ? produtos
-    : produtos.filter(p => {
-        if (!p.categoria) return false;
+    categoriaAtual === "Todos"
+      ? produtos
+      : produtos.filter(p => {
+          if (!p.categoria) return false;
 
-        const catProduto = p.categoria.toLowerCase().trim();
-        const catAtual = categoriaAtual.toLowerCase().trim();
+          const catProduto = p.categoria.toLowerCase().trim();
+          const catAtual = categoriaAtual.toLowerCase().trim();
 
-        return catProduto.includes(catAtual);
-      });
-
+          return catProduto.includes(catAtual);
+        });
 
   if (filtrados.length === 0) {
     listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
@@ -145,7 +144,7 @@ async function adicionarNaComanda(produto) {
       {
         comanda_id: comandaId,
         nome: produto.nome,
-        quantidade: 1,
+        qtd: 1,               // ✅ CORREÇÃO ÚNICA (antes era quantidade)
         preco: produto.preco
       }
     ]);
