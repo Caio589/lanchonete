@@ -2,91 +2,85 @@ import { supabase } from "../js/supabase.js";
 
 const listaComandas = document.getElementById("lista-comandas");
 
-/* =======================
-   CARREGAR COMANDAS
-======================= */
+/* BUSCAR COMANDAS ABERTAS */
 async function carregarComandas() {
   const { data, error } = await supabase
     .from("comandas")
     .select("*")
     .eq("status", "aberta")
-    .order("created_at");
+    .order("mesa_numero", { ascending: true });
 
   if (error) {
-    console.error(error);
+    console.error("Erro ao buscar comandas:", error);
     return;
   }
 
-  renderizarComandas(data);
-}
-
-function renderizarComandas(comandas) {
-  listaComandas.innerHTML = "";
-
-  if (comandas.length === 0) {
+  if (!data || data.length === 0) {
     listaComandas.innerHTML = "<p>Nenhuma comanda aberta</p>";
     return;
   }
 
-  comandas.forEach(c => {
+  listaComandas.innerHTML = "";
+
+  data.forEach(comanda => {
     const div = document.createElement("div");
-    div.className = "card";
+    div.className = "comanda";
 
     div.innerHTML = `
-      <h3>Mesa ${c.mesa}</h3>
-      <button class="btn">Ver itens</button>
-      <div id="itens-${c.id}"></div>
+      <strong>🍽️ Mesa ${comanda.mesa_numero}</strong><br>
+      Comanda: ${comanda.id}<br><br>
+      <button onclick="imprimirComanda('${comanda.id}', ${comanda.mesa_numero})">
+        🖨️ Imprimir Comanda
+      </button>
     `;
-
-    div.querySelector("button").onclick = () => {
-      carregarItens(c.id);
-    };
 
     listaComandas.appendChild(div);
   });
 }
 
-/* =======================
-   ITENS DA COMANDA
-======================= */
-async function carregarItens(comandaId) {
-  const { data, error } = await supabase
+/* IMPRIMIR COMANDA */
+window.imprimirComanda = async function (comandaId, mesaNumero) {
+  const { data: itens, error } = await supabase
     .from("itens_comanda")
     .select("*")
     .eq("comanda_id", comandaId)
     .order("created_at");
 
   if (error) {
-    console.error(error);
+    console.error("Erro ao buscar itens:", error);
     return;
   }
 
-  const div = document.getElementById(`itens-${comandaId}`);
-  div.innerHTML = "";
+  let total = 0;
 
-  data.forEach(i => {
-    div.innerHTML += `• ${i.nome} — R$ ${Number(i.preco).toFixed(2)}<br>`;
+  let html = `
+    <div style="font-family: monospace; width: 280px">
+      <h3>DanBurgers</h3>
+      <strong>Mesa ${mesaNumero}</strong>
+      <hr>
+  `;
+
+  itens.forEach(item => {
+    const subtotal = Number(item.preco) * Number(item.quantidade || 1);
+    total += subtotal;
+
+    html += `${item.nome} x${item.quantidade || 1} - R$ ${subtotal.toFixed(
+      2
+    )}<br>`;
   });
-}
 
-/* =======================
-   REALTIME (AO VIVO)
-======================= */
-supabase
-  .channel("itens-comanda")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "itens_comanda"
-    },
-    payload => {
-      console.log("Novo item:", payload.new);
-      carregarComandas();
-    }
-  )
-  .subscribe();
+  html += `
+      <hr>
+      <strong>Total: R$ ${total.toFixed(2)}</strong>
+    </div>
+  `;
 
-/* START */
+  const area = document.getElementById("area-impressao");
+  area.innerHTML = html;
+
+  window.print();
+};
+
+/* ATUALIZA */
 carregarComandas();
+setInterval(carregarComandas, 3000);
