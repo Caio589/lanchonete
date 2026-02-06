@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Caixa – DanBurgers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+
+<h2>💰 Caixa</h2>
+
+<!-- ABRIR CAIXA -->
+<div id="abrir-caixa">
+  <h3>Abrir Caixa</h3>
+  <input type="number" id="valor-inicial" placeholder="Valor inicial" />
+  <button onclick="abrirCaixa()">Abrir Caixa</button>
+</div>
+
+<!-- CAIXA ABERTO -->
+<div id="caixa-aberto" style="display:none">
+  <h3>Caixa Aberto</h3>
+
+  <p><strong>Valor inicial:</strong> R$ <span id="valorInicial"></span></p>
+  <p><strong>Total entradas:</strong> R$ <span id="totalEntradas">0.00</span></p>
+  <p><strong>Total saídas:</strong> R$ <span id="totalSaidas">0.00</span></p>
+
+  <h4>Adicionar despesa</h4>
+  <input type="text" id="descricao-despesa" placeholder="Descrição" />
+  <input type="number" id="valor-despesa" placeholder="Valor" />
+  <button onclick="adicionarDespesa()">Registrar Despesa</button>
+
+  <br><br>
+  <button onclick="fecharCaixa()">🔒 Fechar Caixa</button>
+</div>
+
+<script type="module" src="./caixa.js"></script>
+</body>
+</html>
