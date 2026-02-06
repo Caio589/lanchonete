@@ -13,7 +13,13 @@
 
 <script>
   const mesa = localStorage.getItem("mesaAtual");
-  document.getElementById("mesa").innerText = mesa;
+
+  if (!mesa) {
+    alert("Mesa não selecionada");
+    window.location.href = "mesas.html";
+  } else {
+    document.getElementById("mesa").innerText = mesa;
+  }
 </script>
 
 <script type="module" src="comanda.js"></script>
