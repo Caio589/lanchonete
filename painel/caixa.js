@@ -10,12 +10,13 @@ verificarCaixaAberto();
 async function verificarCaixaAberto() {
   const hoje = new Date().toISOString().slice(0, 10);
 
-  const { data } = await supabase
-    .from("caixa")
-    .select("*")
-    .eq("data", hoje)
-    .eq("status", "aberto")
-    .single();
+  const { data, error } = await supabase
+  .from("caixa")
+  .select("*")
+  .eq("data", hoje)
+  .eq("status", "aberto")
+  .maybeSingle();
+
 
   if (data) {
     caixaAtual = data;
