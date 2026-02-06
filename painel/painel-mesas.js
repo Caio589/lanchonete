@@ -2,7 +2,9 @@ import { supabase } from "../js/supabase.js";
 
 const listaComandas = document.getElementById("lista-comandas");
 
-/* BUSCAR COMANDAS ABERTAS */
+/* ==========================
+   CARREGAR COMANDAS ABERTAS
+========================== */
 async function carregarComandas() {
   const { data, error } = await supabase
     .from("comandas")
@@ -15,20 +17,19 @@ async function carregarComandas() {
     return;
   }
 
+  listaComandas.innerHTML = "";
+
   if (!data || data.length === 0) {
     listaComandas.innerHTML = "<p>Nenhuma comanda aberta</p>";
     return;
   }
-
-  listaComandas.innerHTML = "";
 
   data.forEach(comanda => {
     const div = document.createElement("div");
     div.className = "comanda";
 
     div.innerHTML = `
-      <strong>🍽️ Mesa ${comanda.mesa_numero}</strong><br>
-      Comanda: ${comanda.id}<br><br>
+      <strong>Mesa ${comanda.mesa_numero}</strong><br>
       <button onclick="imprimirComanda('${comanda.id}', ${comanda.mesa_numero})">
         🖨️ Imprimir Comanda
       </button>
@@ -38,13 +39,15 @@ async function carregarComandas() {
   });
 }
 
-/* IMPRIMIR COMANDA */
+/* ==========================
+   IMPRIMIR COMANDA
+========================== */
 window.imprimirComanda = async function (comandaId, mesaNumero) {
   const { data: itens, error } = await supabase
     .from("itens_comanda")
     .select("*")
     .eq("comanda_id", comandaId)
-    .order("created_at");
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error("Erro ao buscar itens:", error);
@@ -61,12 +64,15 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
   `;
 
   itens.forEach(item => {
-    const subtotal = Number(item.preco) * Number(item.quantidade || 1);
+    const qtd = Number(item.qtd || 1);
+    const preco = Number(item.preco);
+    const subtotal = preco * qtd;
     total += subtotal;
 
-    html += `${item.nome} x${item.quantidade || 1} - R$ ${subtotal.toFixed(
-      2
-    )}<br>`;
+    html += `
+      ${item.nome} x${qtd}<br>
+      R$ ${subtotal.toFixed(2)}<br>
+    `;
   });
 
   html += `
@@ -81,6 +87,8 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
   window.print();
 };
 
-/* ATUALIZA */
+/* ==========================
+   ATUALIZA AUTOMÁTICA
+========================== */
 carregarComandas();
 setInterval(carregarComandas, 3000);
