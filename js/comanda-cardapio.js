@@ -1,3 +1,5 @@
+console.log("JS NOVO CARREGADO");
+
 import { supabase } from "./supabase.js";
 
 /* =======================
