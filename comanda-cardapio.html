@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Comanda - DanBurgers</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Supabase -->
+  <script type="module" src="./supabase.js"></script>
+
+  <!-- JS da comanda -->
+  <script type="module" src="./js/comanda-cardapio.js" defer></script>
+</head>
+<body>
+
+  <header style="padding: 10px; background:#111; color:#fff; text-align:center;">
+    <h2>🍔 DanBurgers</h2>
+    <p id="mesa-info">Mesa</p>
+  </header>
+
+  <!-- CATEGORIAS -->
+  <div id="categorias" style="padding:10px; display:flex; gap:8px; overflow-x:auto;">
+    <!-- botões JS -->
+  </div>
+
+  <!-- PRODUTOS -->
+  <main style="padding:10px;">
+    <div id="lista-produtos" class="produtos-grid">
+      <!-- produtos via JS -->
+    </div>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer style="padding:10px; border-top:1px solid #ddd;">
+    <button
+      onclick="window.location.href='painel.html'"
+      style="width:100%; padding:12px; font-size:16px;">
+      📋 Voltar para o painel
+    </button>
+  </footer>
+
+</body>
+</html>
