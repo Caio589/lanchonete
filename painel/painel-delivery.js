@@ -80,33 +80,34 @@ async function carregarPedidos() {
 
 /* IMPRIMIR AUTOMÁTICO */
 async function imprimirPedido(pedido) {
-  let texto = `
-Pedido #${pedido.id}
-Cliente: ${pedido.cliente}
-Telefone: ${pedido.telefone}
+  let html = `
+    <div style="font-family: monospace; width: 280px">
+      <h3>DanBurgers</h3>
+      <hr>
 
-`;
+      <strong>Pedido #${pedido.id}</strong><br>
+      Cliente: ${pedido.cliente}<br>
+      Telefone: ${pedido.telefone}<br><br>
+
+      <strong>Itens:</strong><br>
+  `;
 
   pedido.itens.forEach(item => {
-    texto += `${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
+    html += `${item.nome} - R$ ${item.preco.toFixed(2)}<br>`;
   });
 
-  texto += `
--------------------------
-Total: R$ ${pedido.total.toFixed(2)}
-`;
+  html += `
+      <hr>
+      <strong>Total: R$ ${pedido.total.toFixed(2)}</strong>
+    </div>
+  `;
 
-  const cupom = document.getElementById("cupom");
-  const conteudo = document.getElementById("cupom-conteudo");
-
- const area = document.getElementById("area-impressao");
-area.innerHTML = htmlDoPedido;
+  const area = document.getElementById("area-impressao");
+  area.innerHTML = html;
 
   window.print();
 
-  cupom.style.display = "none";
-
-  /* MARCA COMO IMPRESSO */
+  // marca como impresso
   await supabase
     .from("pedidos")
     .update({ status: "impresso" })
