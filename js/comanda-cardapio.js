@@ -98,13 +98,17 @@ function renderizarProdutos() {
   listaProdutos.innerHTML = "";
 
   const filtrados =
-    categoriaAtual === "Todos"
-      ? produtos
-      : produtos.filter(
-          p =>
-            p.categoria &&
-            p.categoria.toLowerCase() === categoriaAtual.toLowerCase()
-        );
+  categoriaAtual === "Todos"
+    ? produtos
+    : produtos.filter(p => {
+        if (!p.categoria) return false;
+
+        const catProduto = p.categoria.toLowerCase().trim();
+        const catAtual = categoriaAtual.toLowerCase().trim();
+
+        return catProduto.includes(catAtual);
+      });
+
 
   if (filtrados.length === 0) {
     listaProdutos.innerHTML = "<p>Nenhum produto encontrado</p>";
