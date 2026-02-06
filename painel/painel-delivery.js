@@ -78,7 +78,6 @@ async function carregarPedidos() {
   });
 }
 
-/* IMPRIMIR AUTOMÁTICO */
 async function imprimirPedido(pedido) {
   let html = `
     <div style="font-family: monospace; width: 280px">
@@ -107,7 +106,6 @@ async function imprimirPedido(pedido) {
 
   window.print();
 
-  // marca como impresso
   await supabase
     .from("pedidos")
     .update({ status: "impresso" })
