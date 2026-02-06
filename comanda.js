@@ -7,6 +7,11 @@ document.getElementById("nova-comanda").onclick = criarComanda;
 async function criarComanda() {
   const mesa = localStorage.getItem("mesaAtual");
 
+  if (!mesa) {
+    alert("Mesa não encontrada");
+    return;
+  }
+
   const { data, error } = await supabase
     .from("comandas")
     .insert([
@@ -24,6 +29,9 @@ async function criarComanda() {
     return;
   }
 
+  // salva a comanda criada
   localStorage.setItem("comandaAtual", data.id);
-  window.location.href = "index.html";
+
+  // 👉 VAI PARA O CARDÁPIO DA MESA
+  window.location.href = `comanda-cardapio.html?comanda=${data.id}`;
 }
