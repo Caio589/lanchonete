@@ -144,7 +144,7 @@ async function adicionarNaComanda(produto) {
     .insert([
       {
         comanda_id: comandaId,
-        produto_nome: produto.nome,
+        nome: produto.nome,
         quantidade: 1,
         preco: produto.preco
       }
