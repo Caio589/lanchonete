@@ -155,24 +155,13 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
 /* =========================
    FECHAR MESA (MANTIDO)
 ========================= */
-window.fecharMesa = async function (comandaId) {
-  const confirmar = confirm("Deseja fechar esta mesa?");
-  if (!confirmar) return;
-
-  const { error } = await supabase
-    .from("comandas")
-    .update({ status: "fechada" })
-    .eq("id", comandaId);
-
-  if (error) {
-    alert("Erro ao fechar mesa");
-    console.error(error);
-    return;
-  }
-
-  alert("Mesa fechada com sucesso!");
-  carregarComandas();
+window.fecharMesa = async function () {
+  alert(
+    "⚠️ Para fechar a mesa, é obrigatório finalizar a venda.\n\n" +
+    "Use o botão 💰 Finalizar venda."
+  );
 };
+
 
 /* =========================
    INICIAR
