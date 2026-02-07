@@ -21,35 +21,25 @@
   <!-- DELIVERY -->
   <section id="aba-delivery">
     <h2>Pedidos Delivery</h2>
-    <div id="lista-pedidos">
-      <!-- JS delivery já usa isso -->
-    </div>
+    <div id="lista-pedidos"></div>
   </section>
 
   <!-- MESAS -->
   <section id="aba-mesas" style="display:none">
     <h2>Comandas das Mesas</h2>
-    <div id="lista-comandas">
-      <!-- JS mesas vai usar isso -->
-    </div>
+    <div id="lista-comandas"></div>
   </section>
 
   <!-- CAIXA -->
   <section id="aba-caixa" style="display:none">
     <h2>💰 Caixa</h2>
 
-    <!-- ABRIR CAIXA -->
     <div id="abrir-caixa">
       <h3>Abertura de Caixa</h3>
-      <input
-        type="number"
-        id="valor-inicial"
-        placeholder="Valor inicial"
-      />
+      <input type="number" id="valor-inicial" placeholder="Valor inicial" />
       <button onclick="abrirCaixa()">Abrir Caixa</button>
     </div>
 
-    <!-- CAIXA ABERTO -->
     <div id="caixa-aberto" style="display:none">
       <p>Valor inicial: R$ <span id="valorInicial">0.00</span></p>
 
@@ -62,16 +52,8 @@
       <hr />
 
       <h3>Adicionar despesa</h3>
-      <input
-        type="text"
-        id="descricao-despesa"
-        placeholder="Descrição"
-      />
-      <input
-        type="number"
-        id="valor-despesa"
-        placeholder="Valor"
-      />
+      <input type="text" id="descricao-despesa" placeholder="Descrição" />
+      <input type="number" id="valor-despesa" placeholder="Valor" />
       <button onclick="adicionarDespesa()">Adicionar</button>
 
       <hr />
@@ -80,7 +62,6 @@
     </div>
   </section>
 
-  <!-- ÁREA DE IMPRESSÃO -->
   <div id="area-impressao"></div>
 
   <!-- JS DAS ABAS -->
@@ -107,7 +88,7 @@
     }
   </script>
 
-  <!-- MODAL FINALIZAR VENDA (ADICIONADO SEM IMPACTAR O SISTEMA) -->
+  <!-- MODAL FINALIZAR VENDA -->
   <div id="modal-finalizar" style="
     display:none;
     position:fixed;
@@ -116,14 +97,8 @@
     background:rgba(0,0,0,0.5);
     align-items:center;
     justify-content:center;
-    z-index:9999;
-  ">
-    <div style="
-      background:#fff;
-      padding:20px;
-      border-radius:8px;
-      width:320px;
-    ">
+    z-index:9999;">
+    <div style="background:#fff;padding:20px;border-radius:8px;width:320px;">
       <h3>Finalizar Venda</h3>
 
       <p>Total: R$ <strong id="total-venda">0.00</strong></p>
@@ -148,22 +123,18 @@
     </div>
   </div>
 
-  <!-- JS DO MODAL (TOTALMENTE ISOLADO) -->
+  <!-- JS DO MODAL + ETAPA 3 -->
   <script>
     let vendaAtual = null;
 
     function abrirFinalizacaoVenda({ tipo, id, total, descricao }) {
       vendaAtual = { tipo, id, total, descricao };
 
-      document.getElementById("total-venda").innerText =
-        Number(total).toFixed(2);
-
+      document.getElementById("total-venda").innerText = Number(total).toFixed(2);
       document.getElementById("valor-recebido").value = "";
       document.getElementById("troco").innerText = "0.00";
-
       document.getElementById("forma-pagamento").value = "dinheiro";
       document.getElementById("campo-dinheiro").style.display = "block";
-
       document.getElementById("modal-finalizar").style.display = "flex";
     }
 
@@ -171,45 +142,65 @@
       document.getElementById("modal-finalizar").style.display = "none";
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document
-        .getElementById("forma-pagamento")
-        .addEventListener("change", e => {
-          document.getElementById("campo-dinheiro").style.display =
-            e.target.value === "dinheiro" ? "block" : "none";
-        });
-
-      document
-        .getElementById("valor-recebido")
-        .addEventListener("input", () => {
-          if (!vendaAtual) return;
-
-          const recebido = Number(
-            document.getElementById("valor-recebido").value
-          );
-
-          const troco = recebido - vendaAtual.total;
-
-          document.getElementById("troco").innerText =
-            troco > 0 ? troco.toFixed(2) : "0.00";
-        });
+    document.getElementById("forma-pagamento").addEventListener("change", e => {
+      document.getElementById("campo-dinheiro").style.display =
+        e.target.value === "dinheiro" ? "block" : "none";
     });
 
-    function confirmarFinalizacao() {
+    document.getElementById("valor-recebido").addEventListener("input", () => {
+      if (!vendaAtual) return;
+      const recebido = Number(document.getElementById("valor-recebido").value);
+      const troco = recebido - vendaAtual.total;
+      document.getElementById("troco").innerText = troco > 0 ? troco.toFixed(2) : "0.00";
+    });
+
+    async function confirmarFinalizacao() {
       if (!vendaAtual) return;
 
-      alert(
-        `Venda pronta para finalizar\n` +
-        `Tipo: ${vendaAtual.tipo}\n` +
-        `Descrição: ${vendaAtual.descricao}\n` +
-        `Total: R$ ${vendaAtual.total.toFixed(2)}`
-      );
+      const forma = document.getElementById("forma-pagamento").value;
+      const recebido = Number(document.getElementById("valor-recebido").value || 0);
+      const total = Number(vendaAtual.total);
+      const troco = forma === "dinheiro" ? Math.max(recebido - total, 0) : 0;
 
+      const hoje = new Date().toISOString().slice(0, 10);
+      const { data: caixa } = await supabase
+        .from("caixa")
+        .select("*")
+        .eq("data", hoje)
+        .eq("status", "aberto")
+        .maybeSingle();
+
+      if (!caixa) {
+        alert("Abra o caixa antes de finalizar a venda.");
+        return;
+      }
+
+      await supabase.from("movimentacoes_caixa").insert([{
+        caixa_id: caixa.id,
+        tipo: "entrada",
+        origem: "venda",
+        descricao: vendaAtual.descricao,
+        valor: total,
+        forma_pagamento: forma,
+        troco: troco
+      }]);
+
+      if (vendaAtual.tipo === "mesa") {
+        await supabase.from("comandas")
+          .update({ status: "fechada" })
+          .eq("id", vendaAtual.id);
+      }
+
+      if (vendaAtual.tipo === "delivery") {
+        await supabase.from("pedidos")
+          .update({ status: "finalizado" })
+          .eq("id", vendaAtual.id);
+      }
+
+      alert("Venda finalizada com sucesso!");
       fecharModal();
 
-      // ETAPA 3:
-      // registrar no caixa
-      // fechar comanda / pedido
+      if (typeof carregarTotais === "function") carregarTotais();
     }
   </script>
 
