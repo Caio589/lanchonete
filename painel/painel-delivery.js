@@ -28,13 +28,12 @@ function tocarSom() {
 
 /* BUSCA PEDIDOS */
 async function carregarPedidos() {
-  // ⭐ NÃO atualiza se o modal estiver aberto
   if (window.modalFinalizacaoAberto) return;
 
   const { data } = await supabase
     .from("pedidos")
     .select("*")
-    .in("status", ["novo", "impresso"]) // ⭐ mantém visível até pagar
+    .in("status", ["novo", "impresso"])
     .order("created_at", { ascending: true });
 
   if (!data || data.length === 0) {
@@ -73,7 +72,7 @@ async function carregarPedidos() {
   });
 }
 
-/* ===== IMPRESSÃO (MANTIDA) ===== */
+/* ===== IMPRESSÃO DELIVERY (ATUALIZADA) ===== */
 async function imprimirPedido(pedido) {
   let itens = [];
 
@@ -83,39 +82,59 @@ async function imprimirPedido(pedido) {
       : pedido.itens;
   }
 
-  if ((!itens || itens.length === 0) && pedido.comanda_id) {
-    const { data } = await supabase
-      .from("itens_comanda")
-      .select("nome, preco, quantidade")
-      .eq("comanda_id", pedido.comanda_id);
-
-    if (data) itens = data;
-  }
-
   if (!itens || itens.length === 0) {
     console.warn("Pedido sem itens:", pedido.id);
     return;
   }
 
   let html = `
-    <div style="font-family: monospace; width: 280px">
-      <h3>DanBurgers</h3>
+    <div style="
+      width:80mm;
+      font-family: monospace;
+      font-size:12px;
+    ">
+      <div style="text-align:center">
+        <img src="../img/logo.png" style="max-width:120px"><br>
+        <strong>DanBurgers</strong><br>
+        <small>${new Date(pedido.created_at).toLocaleString("pt-BR")}</small>
+      </div>
+
       <hr>
 
-      <strong>Pedido #${pedido.id}</strong><br>
-      Cliente: ${pedido.cliente || "Mesa"}<br>
-      Telefone: ${pedido.telefone || "-"}<br><br>
+      <strong>📦 DELIVERY</strong><br>
+      Pedido #${pedido.id}<br>
+      <strong>Cliente:</strong> ${pedido.cliente || "-"}<br>
+      <strong>Telefone:</strong> ${pedido.telefone || "-"}<br>
+      <strong>Endereço:</strong> ${pedido.endereco || "-"}<br>
+
+      <hr>
 
       <strong>Itens:</strong><br>
   `;
 
   itens.forEach(item => {
-    html += `${item.nome} x${item.quantidade || 1} - R$ ${Number(item.preco).toFixed(2)}<br>`;
+    const qtd = item.quantidade || item.qtd || 1;
+    html += `
+      ${item.nome} x${qtd}<br>
+      R$ ${(Number(item.preco) * qtd).toFixed(2)}<br><br>
+    `;
   });
 
   html += `
       <hr>
-      <strong>Total: R$ ${Number(pedido.total).toFixed(2)}</strong>
+      <strong>Total: R$ ${Number(pedido.total).toFixed(2)}</strong><br>
+      <strong>Pagamento:</strong> ${pedido.pagamento || "-"}<br>
+  `;
+
+  if (pedido.pagamento === "dinheiro" && pedido.troco) {
+    html += `<strong>Troco para:</strong> R$ ${Number(pedido.troco).toFixed(2)}<br>`;
+  }
+
+  html += `
+      <hr>
+      <div style="text-align:center">
+        Obrigado pela preferência ❤️
+      </div>
     </div>
   `;
 
@@ -133,7 +152,6 @@ async function imprimirPedido(pedido) {
 /* INICIAR */
 carregarPedidos();
 
-// ⭐ INTERVALO SEGURO
 setInterval(() => {
   if (!window.modalFinalizacaoAberto) {
     carregarPedidos();
