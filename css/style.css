@@ -126,23 +126,24 @@ button {
   display: none;
 }
 
-/* container interno mantido */
+/* container interno (mantém compatível com JS antigo) */
 #categorias {
-  display: flex;              /* 🔥 muda de grid para linha */
+  display: flex;
   gap: 10px;
-  overflow: visible;          /* não quebra JS */
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 /* botões das categorias */
 #categorias .btn {
-  flex: 0 0 auto;             /* 🔥 impede quebrar linha */
+  flex: 0 0 auto;
   padding: 8px 16px;
   border-radius: 20px;
   background: rgba(255,255,255,0.25);
   white-space: nowrap;
 }
 
-/* categoria ativa (se JS usar) */
+/* categoria ativa */
 #categorias .btn.active {
   background: #ffb703;
   color: #000;
@@ -189,12 +190,17 @@ button {
   opacity: 0.85;
 }
 
+/* ========================= */
+/* ===== IMPRESSÃO ======== */
+/* ========================= */
+
 @media print {
   body * {
     visibility: hidden;
   }
 
-  #area-impressao, #area-impressao * {
+  #area-impressao,
+  #area-impressao * {
     visibility: visible;
   }
 
@@ -207,5 +213,6 @@ button {
     font-size: 13px;
     font-weight: bold;
     letter-spacing: 0.5px;
+    color: #000; /* 🔥 garante impressão escura */
   }
 }
