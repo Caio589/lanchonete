@@ -184,17 +184,6 @@ window.fecharCaixa = async function () {
   const valorFinal =
     Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
 
-};
-
-window.fecharCaixa = async function () {
-  const totalEntradas =
-    Number(document.getElementById("totalEntradas").innerText);
-  const totalSaidas =
-    Number(document.getElementById("totalSaidas").innerText);
-
-  const valorFinal =
-    Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
-
   // ⭐ SALVAR NO HISTÓRICO
   await supabase.from("historico_caixa").insert([{
     data: new Date().toISOString().slice(0, 10),
