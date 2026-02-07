@@ -72,7 +72,7 @@ async function carregarPedidos() {
   });
 }
 
-/* ===== IMPRESSÃO DELIVERY (ATUALIZADA) ===== */
+/* ===== IMPRESSÃO DELIVERY (AJUSTE REAL PARA TM-T20) ===== */
 async function imprimirPedido(pedido) {
   let itens = [];
 
@@ -91,25 +91,30 @@ async function imprimirPedido(pedido) {
     <div style="
       width:80mm;
       font-family: monospace;
-      font-size:12px;
+      font-size:28px;        /* 🔥 AQUI resolve o problema */
+      font-weight:900;       /* 🔥 mais escuro */
+      line-height:1.7;
+      color:#000;
     ">
-      <div style="text-align:center">
-        <img src="../img/logo.png" style="max-width:120px"><br>
-        <strong>DanBurgers</strong><br>
-        <small>${new Date(pedido.created_at).toLocaleString("pt-BR")}</small>
+      <div style="text-align:center; font-size:32px; font-weight:900;">
+        DanBurgers
+      </div>
+
+      <div style="text-align:center; font-size:22px;">
+        ${new Date(pedido.created_at).toLocaleString("pt-BR")}
       </div>
 
       <hr>
 
       <strong>📦 DELIVERY</strong><br>
       Pedido #${pedido.id}<br>
-      <strong>Cliente:</strong> ${pedido.cliente || "-"}<br>
-      <strong>Telefone:</strong> ${pedido.telefone || "-"}<br>
-      <strong>Endereço:</strong> ${pedido.endereco || "-"}<br>
+      Cliente: ${pedido.cliente || "-"}<br>
+      Telefone: ${pedido.telefone || "-"}<br>
+      Endereço: ${pedido.endereco || "-"}<br>
 
       <hr>
 
-      <strong>Itens:</strong><br>
+      <strong>ITENS</strong><br>
   `;
 
   itens.forEach(item => {
@@ -122,17 +127,26 @@ async function imprimirPedido(pedido) {
 
   html += `
       <hr>
-      <strong>Total: R$ ${Number(pedido.total).toFixed(2)}</strong><br>
-      <strong>Pagamento:</strong> ${pedido.pagamento || "-"}<br>
+      <div style="font-size:32px; font-weight:900;">
+        TOTAL: R$ ${Number(pedido.total).toFixed(2)}
+      </div>
+
+      <div style="font-size:24px;">
+        Pagamento: ${pedido.pagamento || "-"}
+      </div>
   `;
 
   if (pedido.pagamento === "dinheiro" && pedido.troco) {
-    html += `<strong>Troco para:</strong> R$ ${Number(pedido.troco).toFixed(2)}<br>`;
+    html += `
+      <div style="font-size:24px;">
+        Troco para: R$ ${Number(pedido.troco).toFixed(2)}
+      </div>
+    `;
   }
 
   html += `
       <hr>
-      <div style="text-align:center">
+      <div style="text-align:center; font-size:22px;">
         Obrigado pela preferência ❤️
       </div>
     </div>
