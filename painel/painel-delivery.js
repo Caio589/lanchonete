@@ -1,49 +1,8 @@
 import { supabase } from "../js/supabase.js";
 
-async function carregarItensComanda(comandaId) {
-  const { data, error } = await supabase
-    .from("itens_comanda")
-    .select("*")
-    .eq("comanda_id", comandaId)
-    .order("created_at");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  console.log("ITENS DA COMANDA:", data);
-}
-
 const lista = document.getElementById("lista-pedidos");
-const botaoSom = document.getElementById("ativar-som");
 
 let pedidosImpressos = new Set();
-
-/* ===== SOM (WEB AUDIO API) ===== */
-let audioContext = null;
-let somLiberado = false;
-
-/* LIBERAR SOM (1 CLIQUE) */
-
-
-/* TOCAR SOM */
-function tocarSom() {
-  if (!somLiberado || !audioContext) return;
-
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + 0.25);
-}
 
 /* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
@@ -63,7 +22,6 @@ async function carregarPedidos() {
   data.forEach(pedido => {
     if (!pedidosImpressos.has(pedido.id)) {
       pedidosImpressos.add(pedido.id);
-      tocarSom();
       imprimirPedido(pedido);
     }
 
@@ -78,7 +36,20 @@ async function carregarPedidos() {
   });
 }
 
+/* IMPRIMIR */
 async function imprimirPedido(pedido) {
+  let itens = pedido.itens;
+
+  // ✅ CORREÇÃO CRÍTICA
+  if (typeof itens === "string") {
+    try {
+      itens = JSON.parse(itens);
+    } catch (e) {
+      console.error("Erro ao converter itens:", e);
+      itens = [];
+    }
+  }
+
   let html = `
     <div style="font-family: monospace; width: 280px">
       <h3>DanBurgers</h3>
@@ -91,8 +62,8 @@ async function imprimirPedido(pedido) {
       <strong>Itens:</strong><br>
   `;
 
-  pedido.itens.forEach(item => {
-    html += `${item.nome} - R$ ${item.preco.toFixed(2)}<br>`;
+  itens.forEach(item => {
+    html += `${item.nome} - R$ ${Number(item.preco).toFixed(2)}<br>`;
   });
 
   html += `
@@ -112,6 +83,6 @@ async function imprimirPedido(pedido) {
     .eq("id", pedido.id);
 }
 
-/* ATUALIZA A CADA 3s */
+/* ATUALIZA */
 carregarPedidos();
 setInterval(carregarPedidos, 3000);
