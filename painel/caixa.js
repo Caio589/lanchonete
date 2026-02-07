@@ -110,10 +110,10 @@ async function carregarTotais() {
   let entradas = 0;
   let saidas = 0;
 
-  data.forEach(m => {
-    if (m.tipo === "entrada") entradas += Number(m.valor);
-    if (m.tipo === "saida") saidas += Number(m.valor);
-  });
+  (data || []).forEach(m => {
+  if (m.tipo === "entrada") entradas += Number(m.valor);
+  if (m.tipo === "saida") saidas += Number(m.valor);
+});
 
   document.getElementById("totalEntradas").innerText = entradas.toFixed(2);
   document.getElementById("totalSaidas").innerText = saidas.toFixed(2);
