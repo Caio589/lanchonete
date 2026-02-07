@@ -182,7 +182,7 @@ button {
     visibility: hidden;
   }
 
-  #area-impressao, #area-impressao * {
+  #area-impressao, #area-impressao * { bold;
     visibility: visible;
   }
 
@@ -192,6 +192,8 @@ button {
     top: 0;
     width: 80mm;
     font-family: monospace;
-    font-size: 12px
+    font-size: 13px
+    font-weight: bold;
+    letter-spacing: 0,5px;
   }
 }
