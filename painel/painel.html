@@ -15,6 +15,7 @@
   <div style="display:flex; gap:10px; margin-bottom:15px;">
     <button onclick="mostrarDelivery()">📦 Delivery</button>
     <button onclick="mostrarMesas()">🍽️ Mesas</button>
+    <button onclick="mostrarCaixa()">💰 Caixa</button>
   </div>
 
   <!-- DELIVERY -->
@@ -33,25 +34,83 @@
     </div>
   </section>
 
-  <!-- ÁREA DE IMPRESSÃO (CORRIGIDA) -->
+  <!-- CAIXA -->
+  <section id="aba-caixa" style="display:none">
+    <h2>💰 Caixa</h2>
+
+    <!-- ABRIR CAIXA -->
+    <div id="abrir-caixa">
+      <h3>Abertura de Caixa</h3>
+      <input
+        type="number"
+        id="valor-inicial"
+        placeholder="Valor inicial"
+      />
+      <button onclick="abrirCaixa()">Abrir Caixa</button>
+    </div>
+
+    <!-- CAIXA ABERTO -->
+    <div id="caixa-aberto" style="display:none">
+      <p>Valor inicial: R$ <span id="valorInicial">0.00</span></p>
+
+      <hr />
+
+      <h3>Totais do dia</h3>
+      <p>Entradas: R$ <span id="totalEntradas">0.00</span></p>
+      <p>Saídas: R$ <span id="totalSaidas">0.00</span></p>
+
+      <hr />
+
+      <h3>Adicionar despesa</h3>
+      <input
+        type="text"
+        id="descricao-despesa"
+        placeholder="Descrição"
+      />
+      <input
+        type="number"
+        id="valor-despesa"
+        placeholder="Valor"
+      />
+      <button onclick="adicionarDespesa()">Adicionar</button>
+
+      <hr />
+
+      <button onclick="fecharCaixa()">Fechar Caixa</button>
+    </div>
+  </section>
+
+  <!-- ÁREA DE IMPRESSÃO -->
   <div id="area-impressao"></div>
 
   <!-- JS DAS ABAS -->
   <script>
-    function mostrarDelivery() {
-      document.getElementById("aba-delivery").style.display = "block";
+    function esconderTodas() {
+      document.getElementById("aba-delivery").style.display = "none";
       document.getElementById("aba-mesas").style.display = "none";
+      document.getElementById("aba-caixa").style.display = "none";
+    }
+
+    function mostrarDelivery() {
+      esconderTodas();
+      document.getElementById("aba-delivery").style.display = "block";
     }
 
     function mostrarMesas() {
-      document.getElementById("aba-delivery").style.display = "none";
+      esconderTodas();
       document.getElementById("aba-mesas").style.display = "block";
+    }
+
+    function mostrarCaixa() {
+      esconderTodas();
+      document.getElementById("aba-caixa").style.display = "block";
     }
   </script>
 
   <!-- JS DO PAINEL -->
   <script type="module" src="./painel-delivery.js"></script>
   <script type="module" src="./painel-mesas.js"></script>
+  <script type="module" src="./caixa.js"></script>
 
 </body>
 </html>
