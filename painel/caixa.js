@@ -11,12 +11,11 @@ async function verificarCaixaAberto() {
   const hoje = new Date().toISOString().slice(0, 10);
 
   const { data, error } = await supabase
-  .from("caixa")
-  .select("*")
-  .eq("data", hoje)
-  .eq("status", "aberto")
-  .maybeSingle();
-
+    .from("caixa")
+    .select("*")
+    .eq("data", hoje)
+    .eq("status", "aberto")
+    .maybeSingle();
 
   if (data) {
     caixaAtual = data;
@@ -141,6 +140,33 @@ async function carregarTotais() {
 }
 
 /* =======================
+   GERAR PDF DO CAIXA
+======================= */
+function gerarPDFCaixa(resumo) {
+  const html = `
+    <div style="font-family: Arial; width: 300px">
+      <h2>DanBurgers</h2>
+      <h3>Relatório de Caixa</h3>
+      <p>Data: ${resumo.data}</p>
+      <hr>
+      <p>Valor inicial: R$ ${resumo.valor_inicial}</p>
+      <p>Entradas: R$ ${resumo.total_entradas}</p>
+      <p>Saídas: R$ ${resumo.total_saidas}</p>
+      <p>Dinheiro: R$ ${resumo.dinheiro}</p>
+      <p>Pix: R$ ${resumo.pix}</p>
+      <p>Cartão: R$ ${resumo.cartao}</p>
+      <p>Troco: R$ ${resumo.troco}</p>
+      <hr>
+      <strong>Saldo final: R$ ${resumo.valor_final}</strong>
+    </div>
+  `;
+
+  const area = document.getElementById("area-impressao");
+  area.innerHTML = html;
+  window.print();
+}
+
+/* =======================
    FECHAR CAIXA
 ======================= */
 window.fecharCaixa = async function () {
@@ -151,6 +177,32 @@ window.fecharCaixa = async function () {
 
   const valorFinal =
     Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
+
+  // ⭐ SALVAR NO HISTÓRICO
+  await supabase.from("historico_caixa").insert([{
+    data: new Date().toISOString().slice(0, 10),
+    valor_inicial: caixaAtual.valor_inicial,
+    total_entradas: totalEntradas,
+    total_saidas: totalSaidas,
+    dinheiro: Number(document.getElementById("totalDinheiro").innerText),
+    pix: Number(document.getElementById("totalPix").innerText),
+    cartao: Number(document.getElementById("totalCartao").innerText),
+    troco: Number(document.getElementById("totalTroco").innerText),
+    valor_final: valorFinal
+  }]);
+
+  // ⭐ GERAR PDF
+  gerarPDFCaixa({
+    data: new Date().toLocaleDateString("pt-BR"),
+    valor_inicial: caixaAtual.valor_inicial.toFixed(2),
+    total_entradas: totalEntradas.toFixed(2),
+    total_saidas: totalSaidas.toFixed(2),
+    dinheiro: document.getElementById("totalDinheiro").innerText,
+    pix: document.getElementById("totalPix").innerText,
+    cartao: document.getElementById("totalCartao").innerText,
+    troco: document.getElementById("totalTroco").innerText,
+    valor_final: valorFinal.toFixed(2)
+  });
 
   await supabase
     .from("caixa")
@@ -163,14 +215,3 @@ window.fecharCaixa = async function () {
   alert(`Caixa fechado. Saldo final: R$ ${valorFinal.toFixed(2)}`);
   location.reload();
 };
-await supabase.from("historico_caixa").insert([{
-  data: new Date().toISOString().slice(0, 10),
-  valor_inicial: caixaAtual.valor_inicial,
-  total_entradas: totalEntradas,
-  total_saidas: totalSaidas,
-  dinheiro: Number(document.getElementById("totalDinheiro").innerText),
-  pix: Number(document.getElementById("totalPix").innerText),
-  cartao: Number(document.getElementById("totalCartao").innerText),
-  troco: Number(document.getElementById("totalTroco").innerText),
-  valor_final: valorFinal
-}]);
