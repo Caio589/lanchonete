@@ -184,7 +184,6 @@ window.fecharCaixa = async function () {
   const valorFinal =
     Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
 
-  ...
 };
 
 window.fecharCaixa = async function () {
