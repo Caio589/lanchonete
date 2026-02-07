@@ -104,19 +104,40 @@ window.adicionarDespesa = async function () {
 async function carregarTotais() {
   const { data } = await supabase
     .from("movimentacoes_caixa")
-    .select("tipo, valor")
+    .select("tipo, valor, forma_pagamento, troco")
     .eq("caixa_id", caixaAtual.id);
 
   let entradas = 0;
   let saidas = 0;
 
+  let dinheiro = 0;
+  let pix = 0;
+  let cartao = 0;
+  let trocoTotal = 0;
+
   (data || []).forEach(m => {
-  if (m.tipo === "entrada") entradas += Number(m.valor);
-  if (m.tipo === "saida") saidas += Number(m.valor);
-});
+    if (m.tipo === "entrada") {
+      entradas += Number(m.valor);
+
+      if (m.forma_pagamento === "dinheiro") dinheiro += Number(m.valor);
+      if (m.forma_pagamento === "pix") pix += Number(m.valor);
+      if (m.forma_pagamento === "cartao") cartao += Number(m.valor);
+
+      trocoTotal += Number(m.troco || 0);
+    }
+
+    if (m.tipo === "saida") {
+      saidas += Number(m.valor);
+    }
+  });
 
   document.getElementById("totalEntradas").innerText = entradas.toFixed(2);
   document.getElementById("totalSaidas").innerText = saidas.toFixed(2);
+
+  document.getElementById("totalDinheiro").innerText = dinheiro.toFixed(2);
+  document.getElementById("totalPix").innerText = pix.toFixed(2);
+  document.getElementById("totalCartao").innerText = cartao.toFixed(2);
+  document.getElementById("totalTroco").innerText = trocoTotal.toFixed(2);
 }
 
 /* =======================
