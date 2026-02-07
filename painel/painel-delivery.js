@@ -26,16 +26,19 @@ function tocarSom() {
   oscillator.stop(audioContext.currentTime + 0.25);
 }
 
-/* BUSCA PEDIDOS NOVOS */
+/* BUSCA PEDIDOS */
 async function carregarPedidos() {
+  // ⭐ NÃO atualiza se o modal estiver aberto
+  if (window.modalFinalizacaoAberto) return;
+
   const { data } = await supabase
     .from("pedidos")
     .select("*")
-    .eq("status", "novo")
+    .in("status", ["novo", "impresso"]) // ⭐ mantém visível até pagar
     .order("created_at", { ascending: true });
 
   if (!data || data.length === 0) {
-    lista.innerHTML = "<p>Nenhum pedido novo</p>";
+    lista.innerHTML = "<p>Nenhum pedido pendente</p>";
     return;
   }
 
@@ -56,7 +59,6 @@ async function carregarPedidos() {
       Cliente: ${pedido.cliente || "Mesa"}<br>
       Total: R$ ${Number(pedido.total).toFixed(2)}<br><br>
 
-      <!-- 🔥 NOVO: FINALIZAR VENDA -->
       <button onclick="abrirFinalizacaoVenda({
         tipo: 'delivery',
         id: '${pedido.id}',
@@ -75,14 +77,12 @@ async function carregarPedidos() {
 async function imprimirPedido(pedido) {
   let itens = [];
 
-  // 🔹 DELIVERY
   if (pedido.itens && pedido.itens.length > 0) {
     itens = typeof pedido.itens === "string"
       ? JSON.parse(pedido.itens)
       : pedido.itens;
   }
 
-  // 🔹 MESAS / COMANDAS
   if ((!itens || itens.length === 0) && pedido.comanda_id) {
     const { data } = await supabase
       .from("itens_comanda")
@@ -130,6 +130,12 @@ async function imprimirPedido(pedido) {
     .eq("id", pedido.id);
 }
 
-/* ATUALIZA A CADA 3s */
+/* INICIAR */
 carregarPedidos();
-setInterval(carregarPedidos, 3000);
+
+// ⭐ INTERVALO SEGURO
+setInterval(() => {
+  if (!window.modalFinalizacaoAberto) {
+    carregarPedidos();
+  }
+}, 3000);
