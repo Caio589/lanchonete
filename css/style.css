@@ -110,7 +110,7 @@ button {
 }
 
 /* ============================= */
-/* ===== CATEGORIAS CARROSSEL === */
+/* ===== CATEGORIAS (CARROSSEL) */
 /* ============================= */
 
 .categorias-carousel {
@@ -177,7 +177,6 @@ button {
   font-size: 0.85rem;
 }
 
-/* HOVER */
 .btn.editar:hover,
 .btn.excluir:hover,
 .btn-add:hover,
@@ -186,7 +185,7 @@ button {
 }
 
 /* ========================= */
-/* ===== IMPRESSÃO TM-T20 == */
+/* ===== IMPRESSÃO ======== */
 /* ========================= */
 
 @media print {
@@ -203,31 +202,20 @@ button {
     position: absolute;
     left: 0;
     top: 0;
-
     width: 80mm;
-    padding: 4mm;
-
     font-family: monospace;
-    font-size: 18px;       /* 🔥 LETRA GRANDE */
-    font-weight: 900;
-    line-height: 1.6;      /* 🔥 OCUPA O PAPEL */
-    letter-spacing: 0.8px;
 
+    /* 🔥 AUMENTO FORTE PARA TM-T20 */
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1.7;
+    letter-spacing: 1px;
     color: #000;
-    background: #fff;
   }
 
   #area-impressao h2,
   #area-impressao h3 {
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 900;
-    text-align: center;
-    margin: 6px 0;
-  }
-
-  #area-impressao hr {
-    border: none;
-    border-top: 2px dashed #000;
-    margin: 8px 0;
   }
 }
