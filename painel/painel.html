@@ -118,7 +118,7 @@
     window.modalFinalizacaoAberto = false;
   </script>
 
-  <!-- 🔥 MODAL FINALIZAR VENDA (FALTAVA) -->
+  <!-- MODAL FINALIZAR VENDA -->
   <div id="modal-finalizar" style="
     display:none;
     position:fixed;
@@ -153,7 +153,7 @@
     </div>
   </div>
 
-  <!-- 🔥 FUNÇÕES GLOBAIS DO MODAL (FALTAVA) -->
+  <!-- FUNÇÕES GLOBAIS DO MODAL -->
   <script>
     let vendaAtual = null;
 
@@ -170,6 +170,58 @@
     window.fecharModal = function () {
       window.modalFinalizacaoAberto = false;
       document.getElementById("modal-finalizar").style.display = "none";
+    };
+
+    window.confirmarFinalizacao = async function () {
+      if (!vendaAtual) return;
+
+      const forma = document.getElementById("forma-pagamento").value;
+      const recebido = Number(document.getElementById("valor-recebido").value || 0);
+      const total = Number(vendaAtual.total);
+      const troco = forma === "dinheiro" ? Math.max(recebido - total, 0) : 0;
+
+      const hoje = new Date().toISOString().slice(0, 10);
+
+      const { data: caixa } = await supabase
+        .from("caixa")
+        .select("*")
+        .eq("data", hoje)
+        .eq("status", "aberto")
+        .maybeSingle();
+
+      if (!caixa) {
+        alert("Abra o caixa antes de finalizar a venda.");
+        return;
+      }
+
+      await supabase.from("movimentacoes_caixa").insert([{
+        caixa_id: caixa.id,
+        tipo: "entrada",
+        origem: "venda",
+        descricao: vendaAtual.descricao,
+        valor: total,
+        forma_pagamento: forma,
+        troco: troco
+      }]);
+
+      if (vendaAtual.tipo === "mesa") {
+        await supabase.from("comandas")
+          .update({ status: "fechada" })
+          .eq("id", vendaAtual.id);
+      }
+
+      if (vendaAtual.tipo === "delivery") {
+        await supabase.from("pedidos")
+          .update({ status: "finalizado" })
+          .eq("id", vendaAtual.id);
+      }
+
+      alert("Venda finalizada com sucesso!");
+      fecharModal();
+
+      if (typeof carregarTotais === "function") {
+        carregarTotais();
+      }
     };
   </script>
 
