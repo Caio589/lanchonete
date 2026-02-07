@@ -8,6 +8,9 @@ const listaComandas = document.getElementById("lista-comandas");
    CARREGAR COMANDAS ABERTAS
 ========================= */
 async function carregarComandas() {
+  // ⭐ NÃO atualiza se o modal estiver aberto
+  if (window.modalFinalizacaoAberto) return;
+
   const { data, error } = await supabase
     .from("comandas")
     .select("*")
@@ -27,7 +30,6 @@ async function carregarComandas() {
   }
 
   for (const comanda of data) {
-    // 🔹 BUSCAR ITENS PARA CALCULAR TOTAL (SEM ALTERAR BANCO)
     const { data: itens } = await supabase
       .from("itens_comanda")
       .select("preco, qtd")
@@ -55,7 +57,6 @@ async function carregarComandas() {
         🖨️ Imprimir
       </button>
 
-      <!-- 🔥 NOVO: FINALIZAR VENDA (CHAMA O CAIXA) -->
       <button onclick="abrirFinalizacaoVenda({
         tipo: 'mesa',
         id: '${comanda.id}',
@@ -65,7 +66,6 @@ async function carregarComandas() {
         💰 Finalizar venda
       </button>
 
-      <!-- ❌ NÃO REMOVIDO -->
       <button onclick="fecharMesa('${comanda.id}')">
         ✅ Fechar Mesa
       </button>
@@ -178,4 +178,10 @@ window.fecharMesa = async function (comandaId) {
    INICIAR
 ========================= */
 carregarComandas();
-setInterval(carregarComandas, 3000);
+
+// ⭐ INTERVALO SEGURO (NÃO ATUALIZA COM MODAL ABERTO)
+setInterval(() => {
+  if (!window.modalFinalizacaoAberto) {
+    carregarComandas();
+  }
+}, 3000);
