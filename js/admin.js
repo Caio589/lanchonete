@@ -71,10 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // MOSTRAR CAMPOS PIZZA
+  // MOSTRAR CAMPOS PIZZA ✅
   // =========================
   selectCategoria.addEventListener("change", () => {
-    if (selectCategoria.value.toLowerCase() === "pizza") {
+    if (selectCategoria.value.toLowerCase().includes("pizza")) {
       campoPrecoNormal.style.display = "none"
       campoPizza.style.display = "block"
     } else {
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // CRIAR PRODUTO (BLINDADO)
+  // CRIAR PRODUTO (AJUSTADO)
   // =========================
   btnCriarProduto.onclick = async () => {
     const nome = document.getElementById("nomeProduto").value.trim()
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ativo: true
     }
 
-    if (categoria.toLowerCase() === "pizza") {
+    if (categoria.toLowerCase().includes("pizza")) {
       if (!precoP || !precoM || !precoG) {
         alert("Pizza precisa de preços P / M / G")
         return
@@ -177,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
-    // limpar campos
     document.getElementById("nomeProduto").value = ""
     document.getElementById("descricaoProduto").value = ""
     document.getElementById("precoProduto").value = ""
