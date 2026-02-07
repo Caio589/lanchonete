@@ -26,12 +26,26 @@ async function carregarComandas() {
     return;
   }
 
-  data.forEach(comanda => {
+  for (const comanda of data) {
+    // 🔹 BUSCAR ITENS PARA CALCULAR TOTAL (SEM ALTERAR BANCO)
+    const { data: itens } = await supabase
+      .from("itens_comanda")
+      .select("preco, qtd")
+      .eq("comanda_id", comanda.id);
+
+    let total = 0;
+    if (itens) {
+      itens.forEach(item => {
+        total += Number(item.preco) * Number(item.qtd || 1);
+      });
+    }
+
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <strong>🍽️ Mesa ${comanda.mesa_numero}</strong><br><br>
+      <strong>🍽️ Mesa ${comanda.mesa_numero}</strong><br>
+      <strong>Total: R$ ${total.toFixed(2)}</strong><br><br>
 
       <button onclick="verItens('${comanda.id}')">
         👀 Ver itens
@@ -41,13 +55,24 @@ async function carregarComandas() {
         🖨️ Imprimir
       </button>
 
+      <!-- 🔥 NOVO: FINALIZAR VENDA (CHAMA O CAIXA) -->
+      <button onclick="abrirFinalizacaoVenda({
+        tipo: 'mesa',
+        id: '${comanda.id}',
+        total: ${total},
+        descricao: 'Mesa ${comanda.mesa_numero}'
+      })">
+        💰 Finalizar venda
+      </button>
+
+      <!-- ❌ NÃO REMOVIDO -->
       <button onclick="fecharMesa('${comanda.id}')">
         ✅ Fechar Mesa
       </button>
     `;
 
     listaComandas.appendChild(div);
-  });
+  }
 }
 
 /* =========================
@@ -128,7 +153,7 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
 };
 
 /* =========================
-   FECHAR MESA
+   FECHAR MESA (MANTIDO)
 ========================= */
 window.fecharMesa = async function (comandaId) {
   const confirmar = confirm("Deseja fechar esta mesa?");
