@@ -163,3 +163,14 @@ window.fecharCaixa = async function () {
   alert(`Caixa fechado. Saldo final: R$ ${valorFinal.toFixed(2)}`);
   location.reload();
 };
+await supabase.from("historico_caixa").insert([{
+  data: new Date().toISOString().slice(0, 10),
+  valor_inicial: caixaAtual.valor_inicial,
+  total_entradas: totalEntradas,
+  total_saidas: totalSaidas,
+  dinheiro: Number(document.getElementById("totalDinheiro").innerText),
+  pix: Number(document.getElementById("totalPix").innerText),
+  cartao: Number(document.getElementById("totalCartao").innerText),
+  troco: Number(document.getElementById("totalTroco").innerText),
+  valor_final: valorFinal
+}]);
