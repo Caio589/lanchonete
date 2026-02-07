@@ -8,7 +8,6 @@ const listaComandas = document.getElementById("lista-comandas");
    CARREGAR COMANDAS ABERTAS
 ========================= */
 async function carregarComandas() {
-  // ⭐ NÃO atualiza se o modal estiver aberto
   if (window.modalFinalizacaoAberto) return;
 
   const { data, error } = await supabase
@@ -49,13 +48,8 @@ async function carregarComandas() {
       <strong>🍽️ Mesa ${comanda.mesa_numero}</strong><br>
       <strong>Total: R$ ${total.toFixed(2)}</strong><br><br>
 
-      <button onclick="verItens('${comanda.id}')">
-        👀 Ver itens
-      </button>
-
-      <button onclick="imprimirComanda('${comanda.id}', ${comanda.mesa_numero})">
-        🖨️ Imprimir
-      </button>
+      <button onclick="verItens('${comanda.id}')">👀 Ver itens</button>
+      <button onclick="imprimirComanda('${comanda.id}', ${comanda.mesa_numero})">🖨️ Imprimir</button>
 
       <button onclick="abrirFinalizacaoVenda({
         tipo: 'mesa',
@@ -66,9 +60,7 @@ async function carregarComandas() {
         💰 Finalizar venda
       </button>
 
-      <button onclick="fecharMesa('${comanda.id}')">
-        ✅ Fechar Mesa
-      </button>
+      <button onclick="fecharMesa()">✅ Fechar Mesa</button>
     `;
 
     listaComandas.appendChild(div);
@@ -106,7 +98,7 @@ window.verItens = async function (comandaId) {
 };
 
 /* =========================
-   IMPRIMIR COMANDA
+   IMPRIMIR COMANDA (CORRIGIDO)
 ========================= */
 window.imprimirComanda = async function (comandaId, mesaNumero) {
   const { data: itens, error } = await supabase
@@ -124,25 +116,41 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
   let total = 0;
 
   let html = `
-    <div style="font-family: monospace; width: 280px">
-      <h3>DanBurgers</h3>
-      <strong>Mesa ${mesaNumero}</strong>
+    <div style="
+      width:80mm;
+      font-family: monospace;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.7;
+      color:#000;
+    ">
+      <div style="text-align:center; font-size:32px; font-weight:900;">
+        DanBurgers
+      </div>
+
+      <div style="text-align:center; font-size:24px;">
+        Mesa ${mesaNumero}
+      </div>
+
       <hr>
   `;
 
   itens.forEach(item => {
-    const subtotal = Number(item.preco) * Number(item.qtd || 1);
+    const qtd = item.qtd || 1;
+    const subtotal = Number(item.preco) * qtd;
     total += subtotal;
 
     html += `
-      ${item.nome} x${item.qtd || 1}<br>
+      ${item.nome} x${qtd}<br>
       R$ ${subtotal.toFixed(2)}<br><br>
     `;
   });
 
   html += `
       <hr>
-      <strong>Total: R$ ${total.toFixed(2)}</strong>
+      <div style="font-size:32px; font-weight:900;">
+        TOTAL: R$ ${total.toFixed(2)}
+      </div>
     </div>
   `;
 
@@ -153,7 +161,7 @@ window.imprimirComanda = async function (comandaId, mesaNumero) {
 };
 
 /* =========================
-   FECHAR MESA (MANTIDO)
+   FECHAR MESA (BLOQUEADO)
 ========================= */
 window.fecharMesa = async function () {
   alert(
@@ -162,13 +170,11 @@ window.fecharMesa = async function () {
   );
 };
 
-
 /* =========================
    INICIAR
 ========================= */
 carregarComandas();
 
-// ⭐ INTERVALO SEGURO (NÃO ATUALIZA COM MODAL ABERTO)
 setInterval(() => {
   if (!window.modalFinalizacaoAberto) {
     carregarComandas();
