@@ -13,38 +13,26 @@
     <h1>🍔 DanBurgers</h1>
     <p class="sub">Faça seu pedido abaixo</p>
 
-    <!-- CATEGORIAS -->
-    <div class="card categorias-topo">
-      <div id="categorias"></div>
-    </div>
+    <!-- DADOS + ENTREGA + PAGAMENTO + RESUMO (TOPO) -->
+    <div class="card destaque-topo">
 
-    <!-- PRODUTOS -->
-    <div id="lista-produtos"></div>
-
-    <!-- DADOS DO CLIENTE -->
-    <div class="card">
       <h3>👤 Seus dados</h3>
       <input id="nomeCliente" placeholder="Seu nome">
       <input id="telefoneCliente" placeholder="Telefone">
-    </div>
 
-    <!-- ENTREGA -->
-    <div class="card">
+      <hr>
+
       <h3>📦 Entrega</h3>
-
       <select id="entrega">
         <option value="retirada">Retirada no local (Grátis)</option>
         <option value="cidade">Entrega na cidade (Grátis)</option>
         <option value="fora">Entrega fora da cidade (+R$7)</option>
       </select>
-
       <input id="enderecoCliente" placeholder="Endereço (se entrega)">
-    </div>
 
-    <!-- PAGAMENTO -->
-    <div class="card">
+      <hr>
+
       <h3>💳 Pagamento</h3>
-
       <select id="pagamento">
         <option value="">Forma de pagamento</option>
         <option value="pix">Pix</option>
@@ -58,29 +46,30 @@
         placeholder="Troco para quanto?"
         style="display:none"
       >
-    </div>
 
-    <!-- RESUMO -->
-    <div class="card">
+      <hr>
+
       <h3>🧾 Seu pedido</h3>
       <div id="resumo"></div>
       <div class="total" id="total">Total: R$ 0,00</div>
+
       <button class="btn btn-whats" onclick="enviarPedido()">
         Enviar pedido pelo WhatsApp
       </button>
     </div>
 
-  </div
-    
-<!-- CUPOM DE IMPRESSÃO (NÃO APARECE NA TELA) -->
-<div id="cupom" style="display:none">
-  <h2 style="text-align:center">DanBurgers</h2>
-  <hr>
-  <div id="cupom-conteudo"></div>
-</div>
+    <!-- PRODUTOS (SEM BARRA DE CATEGORIAS) -->
+    <div id="lista-produtos"></div>
 
+  </div>
 
-  <!-- JS -->
+  <!-- CUPOM -->
+  <div id="cupom" style="display:none">
+    <h2 style="text-align:center">DanBurgers</h2>
+    <hr>
+    <div id="cupom-conteudo"></div>
+  </div>
+
   <script type="module" src="js/cardapio.js"></script>
 </body>
 </html>
