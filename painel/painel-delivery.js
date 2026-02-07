@@ -4,6 +4,28 @@ const lista = document.getElementById("lista-pedidos");
 
 let pedidosImpressos = new Set();
 
+/* ===== SOM (WEB AUDIO API) ===== */
+let audioContext = null;
+let somLiberado = false;
+
+/* TOCAR SOM */
+function tocarSom() {
+  if (!somLiberado || !audioContext) return;
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.25);
+}
+
 /* BUSCA PEDIDOS NOVOS */
 async function carregarPedidos() {
   const { data } = await supabase
@@ -22,6 +44,7 @@ async function carregarPedidos() {
   data.forEach(pedido => {
     if (!pedidosImpressos.has(pedido.id)) {
       pedidosImpressos.add(pedido.id);
+      tocarSom();
       imprimirPedido(pedido);
     }
 
@@ -29,25 +52,38 @@ async function carregarPedidos() {
     div.className = "pedido";
     div.innerHTML = `
       <strong>Pedido #${pedido.id}</strong><br>
-      Cliente: ${pedido.cliente}<br>
-      Total: R$ ${pedido.total.toFixed(2)}
+      Cliente: ${pedido.cliente || "Mesa"}<br>
+      Total: R$ ${Number(pedido.total).toFixed(2)}
     `;
     lista.appendChild(div);
   });
 }
 
-/* IMPRIMIR */
+/* ===== IMPRESSÃO (CORRIGIDO) ===== */
 async function imprimirPedido(pedido) {
-  let itens = pedido.itens;
+  let itens = [];
 
-  // ✅ CORREÇÃO CRÍTICA
-  if (typeof itens === "string") {
-    try {
-      itens = JSON.parse(itens);
-    } catch (e) {
-      console.error("Erro ao converter itens:", e);
-      itens = [];
-    }
+  // 🔹 DELIVERY (itens vêm direto)
+  if (pedido.itens && pedido.itens.length > 0) {
+    itens = typeof pedido.itens === "string"
+      ? JSON.parse(pedido.itens)
+      : pedido.itens;
+  }
+
+  // 🔹 MESAS / COMANDAS
+  if ((!itens || itens.length === 0) && pedido.comanda_id) {
+    const { data } = await supabase
+      .from("itens_comanda")
+      .select("nome, preco, quantidade")
+      .eq("comanda_id", pedido.comanda_id);
+
+    if (data) itens = data;
+  }
+
+  // 🚫 NÃO imprime vazio
+  if (!itens || itens.length === 0) {
+    console.warn("Pedido sem itens:", pedido.id);
+    return;
   }
 
   let html = `
@@ -56,19 +92,19 @@ async function imprimirPedido(pedido) {
       <hr>
 
       <strong>Pedido #${pedido.id}</strong><br>
-      Cliente: ${pedido.cliente}<br>
-      Telefone: ${pedido.telefone}<br><br>
+      Cliente: ${pedido.cliente || "Mesa"}<br>
+      Telefone: ${pedido.telefone || "-"}<br><br>
 
       <strong>Itens:</strong><br>
   `;
 
   itens.forEach(item => {
-    html += `${item.nome} - R$ ${Number(item.preco).toFixed(2)}<br>`;
+    html += `${item.nome} x${item.quantidade || 1} - R$ ${Number(item.preco).toFixed(2)}<br>`;
   });
 
   html += `
       <hr>
-      <strong>Total: R$ ${pedido.total.toFixed(2)}</strong>
+      <strong>Total: R$ ${Number(pedido.total).toFixed(2)}</strong>
     </div>
   `;
 
@@ -83,6 +119,6 @@ async function imprimirPedido(pedido) {
     .eq("id", pedido.id);
 }
 
-/* ATUALIZA */
+/* ATUALIZA A CADA 3s */
 carregarPedidos();
 setInterval(carregarPedidos, 3000);
