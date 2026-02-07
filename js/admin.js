@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCriarCategoria = document.getElementById("btnCriarCategoria")
   const btnCriarProduto = document.getElementById("btnCriarProduto")
 
-  // =========================
-  // CATEGORIAS
-  // =========================
+  /* =========================
+     CATEGORIAS
+  ========================= */
   async function carregarCategorias() {
     const { data, error } = await supabase
       .from("categorias")
@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="card">
           <b>${c.nome}</b>
           <div class="acoes">
+            <button class="btn editar" data-id="${c.id}" data-nome="${c.nome}">✏️</button>
             <button class="btn excluir" data-id="${c.id}">🗑️</button>
           </div>
         </div>
@@ -45,6 +46,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirm("Excluir categoria?")) return
         await supabase.from("categorias").delete().eq("id", btn.dataset.id)
         carregarCategorias()
+      }
+    })
+
+    /* ✏️ EDITAR CATEGORIA */
+    document.querySelectorAll("#lista-categorias .editar").forEach(btn => {
+      btn.onclick = async () => {
+        const novoNome = prompt("Editar categoria:", btn.dataset.nome)
+        if (!novoNome) return
+
+        const { error } = await supabase
+          .from("categorias")
+          .update({ nome: novoNome })
+          .eq("id", btn.dataset.id)
+
+        if (error) {
+          alert("Erro ao editar categoria")
+          console.error(error)
+          return
+        }
+
+        carregarCategorias()
+        carregarProdutos()
       }
     })
   }
@@ -70,9 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarCategorias()
   }
 
-  // =========================
-  // MOSTRAR CAMPOS PIZZA ✅
-  // =========================
+  /* =========================
+     MOSTRAR CAMPOS PIZZA
+  ========================= */
   selectCategoria.addEventListener("change", () => {
     if (selectCategoria.value.toLowerCase().includes("pizza")) {
       campoPrecoNormal.style.display = "none"
@@ -83,9 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // =========================
-  // PRODUTOS
-  // =========================
+  /* =========================
+     PRODUTOS
+  ========================= */
   async function carregarProdutos() {
     const { data, error } = await supabase
       .from("produtos")
@@ -104,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="card">
           <b>${p.nome}</b> — ${p.categoria}
           <div class="acoes">
+            <button class="btn editar" data-id="${p.id}">✏️</button>
             <button class="btn excluir" data-id="${p.id}">🗑️</button>
           </div>
         </div>
@@ -117,12 +141,46 @@ document.addEventListener("DOMContentLoaded", () => {
         carregarProdutos()
       }
     })
+
+    /* ✏️ EDITAR PRODUTO */
+    document.querySelectorAll("#lista-produtos .editar").forEach(btn => {
+      btn.onclick = async () => {
+        const { data, error } = await supabase
+          .from("produtos")
+          .select("*")
+          .eq("id", btn.dataset.id)
+          .single()
+
+        if (error || !data) {
+          alert("Erro ao carregar produto")
+          return
+        }
+
+        document.getElementById("nomeProduto").value = data.nome
+        document.getElementById("descricaoProduto").value = data.descricao || ""
+        selectCategoria.value = data.categoria
+        selectCategoria.dispatchEvent(new Event("change"))
+
+        if (data.categoria.toLowerCase().includes("pizza")) {
+          document.getElementById("precoP").value = data.preco_p
+          document.getElementById("precoM").value = data.preco_m
+          document.getElementById("precoG").value = data.preco_g
+        } else {
+          document.getElementById("precoProduto").value = data.preco
+        }
+
+        btnCriarProduto.dataset.editando = data.id
+        btnCriarProduto.innerText = "Salvar alterações"
+      }
+    })
   }
 
-  // =========================
-  // CRIAR PRODUTO (AJUSTADO)
-  // =========================
+  /* =========================
+     CRIAR / EDITAR PRODUTO
+  ========================= */
   btnCriarProduto.onclick = async () => {
+    const produtoId = btnCriarProduto.dataset.editando || null
+
     const nome = document.getElementById("nomeProduto").value.trim()
     const descricao = document.getElementById("descricaoProduto").value.trim()
     const categoria = selectCategoria.value
@@ -154,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       dados.preco_p = Number(precoP)
       dados.preco_m = Number(precoM)
       dados.preco_g = Number(precoG)
-
     } else {
       if (!preco) {
         alert("Preencha o preço")
@@ -167,14 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
       dados.preco_g = null
     }
 
-    const { error } = await supabase
-      .from("produtos")
-      .insert([dados])
-
-    if (error) {
-      console.error("ERRO AO INSERIR:", error)
-      alert("Erro ao salvar produto")
-      return
+    if (produtoId) {
+      await supabase.from("produtos").update(dados).eq("id", produtoId)
+      delete btnCriarProduto.dataset.editando
+      btnCriarProduto.innerText = "Criar Produto"
+    } else {
+      await supabase.from("produtos").insert([dados])
     }
 
     document.getElementById("nomeProduto").value = ""
@@ -187,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarProdutos()
   }
 
-  // START
+  /* START */
   carregarCategorias()
   carregarProdutos()
 })
