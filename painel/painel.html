@@ -107,6 +107,112 @@
     }
   </script>
 
+  <!-- MODAL FINALIZAR VENDA (ADICIONADO SEM IMPACTAR O SISTEMA) -->
+  <div id="modal-finalizar" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  ">
+    <div style="
+      background:#fff;
+      padding:20px;
+      border-radius:8px;
+      width:320px;
+    ">
+      <h3>Finalizar Venda</h3>
+
+      <p>Total: R$ <strong id="total-venda">0.00</strong></p>
+
+      <label>Forma de pagamento</label>
+      <select id="forma-pagamento">
+        <option value="dinheiro">Dinheiro</option>
+        <option value="pix">Pix</option>
+        <option value="cartao">Cartão</option>
+      </select>
+
+      <div id="campo-dinheiro" style="margin-top:10px">
+        <label>Valor recebido</label>
+        <input type="number" id="valor-recebido" />
+        <p>Troco: R$ <span id="troco">0.00</span></p>
+      </div>
+
+      <div style="margin-top:15px; display:flex; gap:10px;">
+        <button onclick="confirmarFinalizacao()">Confirmar</button>
+        <button onclick="fecharModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS DO MODAL (TOTALMENTE ISOLADO) -->
+  <script>
+    let vendaAtual = null;
+
+    function abrirFinalizacaoVenda({ tipo, id, total, descricao }) {
+      vendaAtual = { tipo, id, total, descricao };
+
+      document.getElementById("total-venda").innerText =
+        Number(total).toFixed(2);
+
+      document.getElementById("valor-recebido").value = "";
+      document.getElementById("troco").innerText = "0.00";
+
+      document.getElementById("forma-pagamento").value = "dinheiro";
+      document.getElementById("campo-dinheiro").style.display = "block";
+
+      document.getElementById("modal-finalizar").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal-finalizar").style.display = "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document
+        .getElementById("forma-pagamento")
+        .addEventListener("change", e => {
+          document.getElementById("campo-dinheiro").style.display =
+            e.target.value === "dinheiro" ? "block" : "none";
+        });
+
+      document
+        .getElementById("valor-recebido")
+        .addEventListener("input", () => {
+          if (!vendaAtual) return;
+
+          const recebido = Number(
+            document.getElementById("valor-recebido").value
+          );
+
+          const troco = recebido - vendaAtual.total;
+
+          document.getElementById("troco").innerText =
+            troco > 0 ? troco.toFixed(2) : "0.00";
+        });
+    });
+
+    function confirmarFinalizacao() {
+      if (!vendaAtual) return;
+
+      alert(
+        `Venda pronta para finalizar\n` +
+        `Tipo: ${vendaAtual.tipo}\n` +
+        `Descrição: ${vendaAtual.descricao}\n` +
+        `Total: R$ ${vendaAtual.total.toFixed(2)}`
+      );
+
+      fecharModal();
+
+      // ETAPA 3:
+      // registrar no caixa
+      // fechar comanda / pedido
+    }
+  </script>
+
   <!-- JS DO PAINEL -->
   <script type="module" src="./painel-delivery.js"></script>
   <script type="module" src="./painel-mesas.js"></script>
