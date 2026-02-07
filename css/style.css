@@ -182,19 +182,14 @@ button {
     visibility: hidden;
   }
 
-  #cupom, #cupom * {
+  #area-impressao, #area-impressao * {
     visibility: visible;
   }
 
-  #cupom {
+  #area-impressao {
     position: absolute;
     left: 0;
     top: 0;
-    width: 58mm; /* impressora 58mm */
-    font-size: 12px;
-  }
-
-  h2 {
-    text-align: center;
+    width: 80mm;
   }
 }
