@@ -170,6 +170,24 @@ function gerarPDFCaixa(resumo) {
    FECHAR CAIXA
 ======================= */
 window.fecharCaixa = async function () {
+
+  if (!caixaAtual) {
+    alert("Não há caixa aberto para fechar.");
+    return;
+  }
+
+  const totalEntradas =
+    Number(document.getElementById("totalEntradas").innerText);
+  const totalSaidas =
+    Number(document.getElementById("totalSaidas").innerText);
+
+  const valorFinal =
+    Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
+
+  ...
+};
+
+window.fecharCaixa = async function () {
   const totalEntradas =
     Number(document.getElementById("totalEntradas").innerText);
   const totalSaidas =
