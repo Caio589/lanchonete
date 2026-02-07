@@ -10,7 +10,7 @@ verificarCaixaAberto();
 async function verificarCaixaAberto() {
   const hoje = new Date().toISOString().slice(0, 10);
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("caixa")
     .select("*")
     .eq("data", hoje)
@@ -39,13 +39,11 @@ window.abrirCaixa = async function () {
 
   const { data, error } = await supabase
     .from("caixa")
-    .insert([
-      {
-        data: hoje,
-        valor_inicial: valorInicial,
-        status: "aberto"
-      }
-    ])
+    .insert([{
+      data: hoje,
+      valor_inicial: valorInicial,
+      status: "aberto"
+    }])
     .select()
     .single();
 
@@ -81,15 +79,13 @@ window.adicionarDespesa = async function () {
     return;
   }
 
-  await supabase.from("movimentacoes_caixa").insert([
-    {
-      caixa_id: caixaAtual.id,
-      tipo: "saida",
-      origem: "despesa",
-      descricao,
-      valor
-    }
-  ]);
+  await supabase.from("movimentacoes_caixa").insert([{
+    caixa_id: caixaAtual.id,
+    tipo: "saida",
+    origem: "despesa",
+    descricao,
+    valor
+  }]);
 
   document.getElementById("descricao-despesa").value = "";
   document.getElementById("valor-despesa").value = "";
@@ -108,7 +104,6 @@ async function carregarTotais() {
 
   let entradas = 0;
   let saidas = 0;
-
   let dinheiro = 0;
   let pix = 0;
   let cartao = 0;
@@ -132,7 +127,6 @@ async function carregarTotais() {
 
   document.getElementById("totalEntradas").innerText = entradas.toFixed(2);
   document.getElementById("totalSaidas").innerText = saidas.toFixed(2);
-
   document.getElementById("totalDinheiro").innerText = dinheiro.toFixed(2);
   document.getElementById("totalPix").innerText = pix.toFixed(2);
   document.getElementById("totalCartao").innerText = cartao.toFixed(2);
@@ -142,7 +136,7 @@ async function carregarTotais() {
 /* =======================
    GERAR PDF DO CAIXA
 ======================= */
-function gerarPDFCaixa(resumo) {
+window.gerarPDFCaixa = function (resumo) {
   const html = `
     <div style="font-family: Arial; width: 300px">
       <h2>DanBurgers</h2>
@@ -164,7 +158,7 @@ function gerarPDFCaixa(resumo) {
   const area = document.getElementById("area-impressao");
   area.innerHTML = html;
   window.print();
-}
+};
 
 /* =======================
    FECHAR CAIXA
@@ -184,7 +178,7 @@ window.fecharCaixa = async function () {
   const valorFinal =
     Number(caixaAtual.valor_inicial) + totalEntradas - totalSaidas;
 
-  // ⭐ SALVAR NO HISTÓRICO
+  // SALVAR HISTÓRICO
   await supabase.from("historico_caixa").insert([{
     data: new Date().toISOString().slice(0, 10),
     valor_inicial: caixaAtual.valor_inicial,
@@ -197,7 +191,7 @@ window.fecharCaixa = async function () {
     valor_final: valorFinal
   }]);
 
-  // ⭐ GERAR PDF
+  // GERAR PDF
   gerarPDFCaixa({
     data: new Date().toLocaleDateString("pt-BR"),
     valor_inicial: caixaAtual.valor_inicial.toFixed(2),
