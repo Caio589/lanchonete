@@ -50,20 +50,32 @@ async function carregarPedidos() {
 
     const div = document.createElement("div");
     div.className = "pedido";
+
     div.innerHTML = `
       <strong>Pedido #${pedido.id}</strong><br>
       Cliente: ${pedido.cliente || "Mesa"}<br>
-      Total: R$ ${Number(pedido.total).toFixed(2)}
+      Total: R$ ${Number(pedido.total).toFixed(2)}<br><br>
+
+      <!-- 🔥 NOVO: FINALIZAR VENDA -->
+      <button onclick="abrirFinalizacaoVenda({
+        tipo: 'delivery',
+        id: '${pedido.id}',
+        total: ${Number(pedido.total)},
+        descricao: 'Delivery ${pedido.cliente || pedido.id}'
+      })">
+        💰 Finalizar venda
+      </button>
     `;
+
     lista.appendChild(div);
   });
 }
 
-/* ===== IMPRESSÃO (CORRIGIDO) ===== */
+/* ===== IMPRESSÃO (MANTIDA) ===== */
 async function imprimirPedido(pedido) {
   let itens = [];
 
-  // 🔹 DELIVERY (itens vêm direto)
+  // 🔹 DELIVERY
   if (pedido.itens && pedido.itens.length > 0) {
     itens = typeof pedido.itens === "string"
       ? JSON.parse(pedido.itens)
@@ -80,7 +92,6 @@ async function imprimirPedido(pedido) {
     if (data) itens = data;
   }
 
-  // 🚫 NÃO imprime vazio
   if (!itens || itens.length === 0) {
     console.warn("Pedido sem itens:", pedido.id);
     return;
