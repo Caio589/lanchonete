@@ -32,7 +32,7 @@ window.carregarHistoricoCaixa = async function () {
       Saídas: R$ ${Number(caixa.total_saidas).toFixed(2)}<br>
       <strong>Saldo final: R$ ${Number(caixa.valor_final).toFixed(2)}</strong><br><br>
 
-      <button onclick="gerarPDFCaixa({
+      <button onclick="window.gerarPDFCaixa({
         data: '${new Date(caixa.data).toLocaleDateString("pt-BR")}',
         valor_inicial: '${Number(caixa.valor_inicial).toFixed(2)}',
         total_entradas: '${Number(caixa.total_entradas).toFixed(2)}',
