@@ -110,30 +110,42 @@ button {
 }
 
 /* ============================= */
-/* ===== CATEGORIAS (TOP) ===== */
+/* ===== CATEGORIAS (CARROSSEL) */
 /* ============================= */
 
-.categorias-topo {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+/* container externo do carrossel */
+.categorias-carousel {
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
 }
 
-/* container das categorias */
-#categorias {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
+/* esconde scrollbar feia */
+.categorias-carousel::-webkit-scrollbar {
+  display: none;
+}
 
-  /* remove scroll */
-  overflow: hidden;
+/* container interno mantido */
+#categorias {
+  display: flex;              /* 🔥 muda de grid para linha */
+  gap: 10px;
+  overflow: visible;          /* não quebra JS */
 }
 
 /* botões das categorias */
 #categorias .btn {
-  text-align: center;
-  white-space: nowrap;
+  flex: 0 0 auto;             /* 🔥 impede quebrar linha */
+  padding: 8px 16px;
+  border-radius: 20px;
   background: rgba(255,255,255,0.25);
+  white-space: nowrap;
+}
+
+/* categoria ativa (se JS usar) */
+#categorias .btn.active {
+  background: #ffb703;
+  color: #000;
 }
 
 /* TOTAL */
@@ -182,7 +194,7 @@ button {
     visibility: hidden;
   }
 
-  #area-impressao, #area-impressao * { bold;
+  #area-impressao, #area-impressao * {
     visibility: visible;
   }
 
@@ -192,8 +204,8 @@ button {
     top: 0;
     width: 80mm;
     font-family: monospace;
-    font-size: 13px
+    font-size: 13px;
     font-weight: bold;
-    letter-spacing: 0,5px;
+    letter-spacing: 0.5px;
   }
 }
