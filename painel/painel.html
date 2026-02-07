@@ -88,6 +88,11 @@
     }
   </script>
 
+  <!-- ⭐ FLAG GLOBAL (NOVA, NÃO QUEBRA NADA) -->
+  <script>
+    window.modalFinalizacaoAberto = false;
+  </script>
+
   <!-- MODAL FINALIZAR VENDA -->
   <div id="modal-finalizar" style="
     display:none;
@@ -123,11 +128,13 @@
     </div>
   </div>
 
-  <!-- JS DO MODAL + ETAPA 3 -->
+  <!-- JS DO MODAL -->
   <script>
     let vendaAtual = null;
 
-    function abrirFinalizacaoVenda({ tipo, id, total, descricao }) {
+    window.abrirFinalizacaoVenda = function ({ tipo, id, total, descricao }) {
+      window.modalFinalizacaoAberto = true; // ⭐ trava atualização
+
       vendaAtual = { tipo, id, total, descricao };
 
       document.getElementById("total-venda").innerText = Number(total).toFixed(2);
@@ -136,11 +143,12 @@
       document.getElementById("forma-pagamento").value = "dinheiro";
       document.getElementById("campo-dinheiro").style.display = "block";
       document.getElementById("modal-finalizar").style.display = "flex";
-    }
+    };
 
-    function fecharModal() {
+    window.fecharModal = function () {
+      window.modalFinalizacaoAberto = false; // ⭐ libera atualização
       document.getElementById("modal-finalizar").style.display = "none";
-    }
+    };
 
     document.getElementById("forma-pagamento").addEventListener("change", e => {
       document.getElementById("campo-dinheiro").style.display =
@@ -154,7 +162,7 @@
       document.getElementById("troco").innerText = troco > 0 ? troco.toFixed(2) : "0.00";
     });
 
-    async function confirmarFinalizacao() {
+    window.confirmarFinalizacao = async function () {
       if (!vendaAtual) return;
 
       const forma = document.getElementById("forma-pagamento").value;
@@ -201,7 +209,7 @@
       fecharModal();
 
       if (typeof carregarTotais === "function") carregarTotais();
-    }
+    };
   </script>
 
   <!-- JS DO PAINEL -->
