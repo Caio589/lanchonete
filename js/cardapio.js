@@ -259,3 +259,10 @@ function escolherSegundoSabor(pizza1, tamanho) {
     precoFinal
   );
 }
+
+/* =======================
+   CORREÇÃO DO ERRO GRAVE
+======================= */
+window.enviarPedido = function () {
+  console.warn("Função enviarPedido chamada, mas não implementada neste JS.");
+};
