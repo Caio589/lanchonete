@@ -185,28 +185,47 @@ function renderizarCarrinho() {
   resumoEl.innerHTML = "";
   let subtotal = 0;
 
- carrinho.forEach((item, i) => {
-  resumoEl.innerHTML += `
-    ${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}
-    <button
-      style="border:none;background:none;cursor:pointer"
-      onclick="carrinho.splice(${i}, 1); renderizarCarrinho();"
-    >
-      ❌
-    </button>
-    <br>
-  `;
-  subtotal += item.preco;
-});
+  carrinho.forEach((item, i) => {
+    const linha = document.createElement("div");
+    linha.style.display = "flex";
+    linha.style.justifyContent = "space-between";
+    linha.style.alignItems = "center";
+    linha.style.marginBottom = "6px";
 
+    const texto = document.createElement("span");
+    texto.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+
+    const btnRemover = document.createElement("button");
+    btnRemover.innerText = "❌";
+    btnRemover.style.background = "#c0392b";
+    btnRemover.style.color = "#fff";
+    btnRemover.style.border = "none";
+    btnRemover.style.borderRadius = "5px";
+    btnRemover.style.cursor = "pointer";
+    btnRemover.style.padding = "2px 6px";
+
+    btnRemover.addEventListener("click", () => {
+      carrinho.splice(i, 1);
+      renderizarCarrinho();
+    });
+
+    linha.appendChild(texto);
+    linha.appendChild(btnRemover);
+    resumoEl.appendChild(linha);
+
+    subtotal += item.preco;
+  });
 
   frete = entregaSelect.value === "fora" ? 7 : 0;
 
-  resumoEl.innerHTML += "<br>";
-  resumoEl.innerHTML +=
+  const freteDiv = document.createElement("div");
+  freteDiv.style.marginTop = "10px";
+  freteDiv.innerText =
     frete > 0
       ? `🚗 Frete: R$ ${frete.toFixed(2)}`
       : `🚚 Frete: Grátis`;
+
+  resumoEl.appendChild(freteDiv);
 
   totalEl.innerText = `Total: R$ ${(subtotal + frete).toFixed(2)}`;
 }
