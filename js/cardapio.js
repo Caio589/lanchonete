@@ -1,4 +1,4 @@
-no caso esse ta certo vc so precisa adicionar o x pq ele ja funciona finalizarv pedido so coloca o x pfv           const comandaAtual = localStorage.getItem("comandaAtual");
+ const comandaAtual = localStorage.getItem("comandaAtual");
 
 if (!comandaAtual) {
   alert("Comanda não encontrada");
@@ -346,4 +346,4 @@ window.enviarPedido = async function () {
 
   carrinho = [];
   renderizarCarrinho();
-};     nao muda nada alem do combinado pfv e me manda pronto 
+};    
