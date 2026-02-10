@@ -1,9 +1,8 @@
-const comandaAtual = localStorage.getItem("comandaAtual");
+no caso esse ta certo vc so precisa adicionar o x pq ele ja funciona finalizarv pedido so coloca o x pfv           const comandaAtual = localStorage.getItem("comandaAtual");
 
 if (!comandaAtual) {
   alert("Comanda não encontrada");
 }
-
 import { supabase } from "./supabase.js";
 import { buscarProdutos, buscarCategorias } from "./data.js";
 
@@ -76,9 +75,14 @@ function renderizarProdutos() {
       ? produtos
       : produtos.filter(p => {
           if (!p.categoria) return false;
+
           const catProduto = p.categoria.toLowerCase().trim();
           const catAtual = categoriaAtual.toLowerCase().trim();
-          if (catAtual === "pizza") return catProduto.includes("pizza");
+
+          if (catAtual === "pizza") {
+            return catProduto.includes("pizza");
+          }
+
           return catProduto === catAtual;
         });
 
@@ -119,7 +123,7 @@ function renderizarProduto(p) {
 }
 
 /* =======================
-   PIZZA
+   PIZZA (1 E 2 SABORES)
 ======================= */
 function renderizarPizza(p) {
   if (p.preco_p == null || p.preco_m == null || p.preco_g == null) return;
@@ -146,10 +150,12 @@ function renderizarPizza(p) {
 
   const botoes = div.querySelectorAll("button");
 
+  // 1 sabor
   botoes[0].onclick = () => addCarrinho(`${p.nome} (P)`, Number(p.preco_p));
   botoes[1].onclick = () => addCarrinho(`${p.nome} (M)`, Number(p.preco_m));
   botoes[2].onclick = () => addCarrinho(`${p.nome} (G)`, Number(p.preco_g));
 
+  // 2 sabores
   botoes[3].onclick = () => escolherSegundoSabor(p, "p");
   botoes[4].onclick = () => escolherSegundoSabor(p, "m");
   botoes[5].onclick = () => escolherSegundoSabor(p, "g");
@@ -158,12 +164,13 @@ function renderizarPizza(p) {
 }
 
 /* =======================
-   CARRINHO (COM REMOVER)
+   CARRINHO
 ======================= */
 async function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
   renderizarCarrinho();
 
+  // salva no banco ligado à comanda
   await supabase.from("itens_comanda").insert([
     {
       comanda_id: comandaAtual,
@@ -178,45 +185,28 @@ function renderizarCarrinho() {
   resumoEl.innerHTML = "";
   let subtotal = 0;
 
-  carrinho.forEach((item, i) => {
-    const linha = document.createElement("div");
-    linha.style.display = "flex";
-    linha.style.justifyContent = "space-between";
-    linha.style.alignItems = "center";
-    linha.style.marginBottom = "6px";
+ carrinho.forEach((item, i) => {
+  resumoEl.innerHTML += `
+    ${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}
+    <button
+      style="border:none;background:none;cursor:pointer"
+      onclick="carrinho.splice(${i}, 1); renderizarCarrinho();"
+    >
+      ❌
+    </button>
+    <br>
+  `;
+  subtotal += item.preco;
+});
 
-    const texto = document.createElement("span");
-    texto.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
-
-    const btn = document.createElement("button");
-    btn.innerText = "❌";
-    btn.style.background = "#c0392b";
-    btn.style.color = "#fff";
-    btn.style.border = "none";
-    btn.style.borderRadius = "5px";
-    btn.style.padding = "2px 6px";
-    btn.style.cursor = "pointer";
-
-    btn.addEventListener("click", () => {
-      carrinho.splice(i, 1);
-      renderizarCarrinho();
-    });
-
-    linha.appendChild(texto);
-    linha.appendChild(btn);
-    resumoEl.appendChild(linha);
-
-    subtotal += item.preco;
-  });
 
   frete = entregaSelect.value === "fora" ? 7 : 0;
 
-  const freteDiv = document.createElement("div");
-  freteDiv.style.marginTop = "10px";
-  freteDiv.innerText =
-    frete > 0 ? `🚗 Frete: R$ ${frete.toFixed(2)}` : `🚚 Frete: Grátis`;
-
-  resumoEl.appendChild(freteDiv);
+  resumoEl.innerHTML += "<br>";
+  resumoEl.innerHTML +=
+    frete > 0
+      ? `🚗 Frete: R$ ${frete.toFixed(2)}`
+      : `🚚 Frete: Grátis`;
 
   totalEl.innerText = `Total: R$ ${(subtotal + frete).toFixed(2)}`;
 }
@@ -227,13 +217,16 @@ function renderizarCarrinho() {
 entregaSelect.addEventListener("change", renderizarCarrinho);
 
 pagamentoSelect.addEventListener("change", () => {
-  trocoInput.style.display =
-    pagamentoSelect.value === "dinheiro" ? "block" : "none";
-  if (pagamentoSelect.value !== "dinheiro") trocoInput.value = "";
+  if (pagamentoSelect.value === "dinheiro") {
+    trocoInput.style.display = "block";
+  } else {
+    trocoInput.style.display = "none";
+    trocoInput.value = "";
+  }
 });
 
 /* =======================
-   2 SABORES
+   2 SABORES (ESCOLHA)
 ======================= */
 function escolherSegundoSabor(pizza1, tamanho) {
   const sabores = produtos.filter(
@@ -259,10 +252,98 @@ function escolherSegundoSabor(pizza1, tamanho) {
     precoFinal
   );
 }
-
 /* =======================
-   CORREÇÃO DO ERRO GRAVE
+   ENVIAR PEDIDO
 ======================= */
-window.enviarPedido = function () {
-  console.warn("Função enviarPedido chamada, mas não implementada neste JS.");
-};
+window.enviarPedido = async function () {
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    return;
+  }
+
+  const nome = nomeInput.value.trim();
+  const telefone = telefoneInput.value.trim();
+  const endereco = enderecoInput.value.trim();
+  const pagamento = pagamentoSelect.value;
+  const troco = trocoInput.value;
+
+  if (!nome || !telefone || !pagamento) {
+    alert("Preencha nome, telefone e pagamento");
+    return;
+  }
+
+  if (entregaSelect.value !== "retirada" && !endereco) {
+    alert("Informe o endereço");
+    return;
+  }
+
+  let subtotal = 0;
+  carrinho.forEach(i => (subtotal += i.preco));
+  const totalPedido = subtotal + frete;
+
+  /* ===== MONTA WHATSAPP ===== */
+  let mensagem =
+    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
+    "━━━━━━━━━━━━━━━━━━%0A%0A" +
+    `👤 *Cliente:* ${nome}%0A` +
+    `📞 *Telefone:* ${telefone}%0A` +
+    `📍 *Entrega:* ${
+      entregaSelect.value === "fora"
+        ? "Fora da cidade"
+        : entregaSelect.value === "cidade"
+        ? "Na cidade"
+        : "Retirada no local"
+    }%0A`;
+
+  if (entregaSelect.value !== "retirada") {
+    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
+  }
+
+  mensagem += `%0A💳 *Pagamento:* ${
+    pagamento === "pix"
+      ? "Pix"
+      : pagamento === "cartao"
+      ? "Cartão"
+      : "Dinheiro"
+  }%0A`;
+
+  if (pagamento === "dinheiro") {
+    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
+  }
+
+  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
+  carrinho.forEach((item, i) => {
+    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
+  });
+
+  mensagem += `%0A`;
+  mensagem +=
+    frete > 0
+      ? `🚗 *Frete:* R$ ${frete.toFixed(2)}`
+      : `🚚 *Frete:* Grátis`;
+
+  mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
+  mensagem += `%0A🔥 *DanBurgers agradece!*`;
+
+  /* ===== WHATSAPP ===== */
+  const whatsapp = "5577981184890"; // seu número
+ window.location.href = `https://wa.me/${whatsapp}?text=${mensagem}`;
+
+  /* ===== PAINEL / SUPABASE ===== */
+  await supabase.from("pedidos").insert([
+    {
+      cliente: nome,
+      telefone,
+      entrega: entregaSelect.value,
+      endereco,
+      pagamento,
+      troco: pagamento === "dinheiro" ? Number(troco) : null,
+      itens: carrinho,
+      total: totalPedido,
+      status: "novo"
+    }
+  ]);
+
+  carrinho = [];
+  renderizarCarrinho();
+};     nao muda nada alem do combinado pfv e me manda pronto 
