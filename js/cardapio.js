@@ -123,7 +123,7 @@ function renderizarProduto(p) {
 }
 
 /* =======================
-   PIZZA (1 E 2 SABORES)
+   PIZZA
 ======================= */
 function renderizarPizza(p) {
   if (p.preco_p == null || p.preco_m == null || p.preco_g == null) return;
@@ -150,12 +150,10 @@ function renderizarPizza(p) {
 
   const botoes = div.querySelectorAll("button");
 
-  // 1 sabor
   botoes[0].onclick = () => addCarrinho(`${p.nome} (P)`, Number(p.preco_p));
   botoes[1].onclick = () => addCarrinho(`${p.nome} (M)`, Number(p.preco_m));
   botoes[2].onclick = () => addCarrinho(`${p.nome} (G)`, Number(p.preco_g));
 
-  // 2 sabores
   botoes[3].onclick = () => escolherSegundoSabor(p, "p");
   botoes[4].onclick = () => escolherSegundoSabor(p, "m");
   botoes[5].onclick = () => escolherSegundoSabor(p, "g");
@@ -170,7 +168,6 @@ async function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
   renderizarCarrinho();
 
-  // salva no banco ligado à comanda
   await supabase.from("itens_comanda").insert([
     {
       comanda_id: comandaAtual,
@@ -181,14 +178,23 @@ async function addCarrinho(nome, preco) {
   ]);
 }
 
+function removerItem(index) {
+  carrinho.splice(index, 1);
+  renderizarCarrinho();
+}
+
 function renderizarCarrinho() {
   resumoEl.innerHTML = "";
   let subtotal = 0;
 
   carrinho.forEach((item, i) => {
-    resumoEl.innerHTML += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(
-      2
-    )}<br>`;
+    resumoEl.innerHTML += `
+      ${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}
+      <button onclick="removerItem(${i})"
+        style="margin-left:8px;background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 6px;cursor:pointer">
+        ❌
+      </button><br>
+    `;
     subtotal += item.preco;
   });
 
@@ -203,22 +209,21 @@ function renderizarCarrinho() {
   totalEl.innerText = `Total: R$ ${(subtotal + frete).toFixed(2)}`;
 }
 
+window.removerItem = removerItem;
+
 /* =======================
    EVENTOS
 ======================= */
 entregaSelect.addEventListener("change", renderizarCarrinho);
 
 pagamentoSelect.addEventListener("change", () => {
-  if (pagamentoSelect.value === "dinheiro") {
-    trocoInput.style.display = "block";
-  } else {
-    trocoInput.style.display = "none";
-    trocoInput.value = "";
-  }
+  trocoInput.style.display =
+    pagamentoSelect.value === "dinheiro" ? "block" : "none";
+  if (pagamentoSelect.value !== "dinheiro") trocoInput.value = "";
 });
 
 /* =======================
-   2 SABORES (ESCOLHA)
+   2 SABORES
 ======================= */
 function escolherSegundoSabor(pizza1, tamanho) {
   const sabores = produtos.filter(
@@ -244,6 +249,7 @@ function escolherSegundoSabor(pizza1, tamanho) {
     precoFinal
   );
 }
+
 /* =======================
    ENVIAR PEDIDO
 ======================= */
@@ -273,68 +279,18 @@ window.enviarPedido = async function () {
   carrinho.forEach(i => (subtotal += i.preco));
   const totalPedido = subtotal + frete;
 
-  /* ===== MONTA WHATSAPP ===== */
   let mensagem =
     "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
-    "━━━━━━━━━━━━━━━━━━%0A%0A" +
-    `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Telefone:* ${telefone}%0A` +
-    `📍 *Entrega:* ${
-      entregaSelect.value === "fora"
-        ? "Fora da cidade"
-        : entregaSelect.value === "cidade"
-        ? "Na cidade"
-        : "Retirada no local"
-    }%0A`;
+    "━━━━━━━━━━━━━━━━━━%0A%0A";
 
-  if (entregaSelect.value !== "retirada") {
-    mensagem += `🏠 *Endereço:* ${endereco}%0A`;
-  }
-
-  mensagem += `%0A💳 *Pagamento:* ${
-    pagamento === "pix"
-      ? "Pix"
-      : pagamento === "cartao"
-      ? "Cartão"
-      : "Dinheiro"
-  }%0A`;
-
-  if (pagamento === "dinheiro") {
-    mensagem += `💵 *Troco para:* R$ ${Number(troco).toFixed(2)}%0A`;
-  }
-
-  mensagem += `%0A🛒 *Itens do pedido:*%0A`;
   carrinho.forEach((item, i) => {
     mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
   });
 
-  mensagem += `%0A`;
-  mensagem +=
-    frete > 0
-      ? `🚗 *Frete:* R$ ${frete.toFixed(2)}`
-      : `🚚 *Frete:* Grátis`;
-
   mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
-  mensagem += `%0A🔥 *DanBurgers agradece!*`;
 
-  /* ===== WHATSAPP ===== */
-  const whatsapp = "5577981184890"; // seu número
- window.location.href = `https://wa.me/${whatsapp}?text=${mensagem}`;
-
-  /* ===== PAINEL / SUPABASE ===== */
-  await supabase.from("pedidos").insert([
-    {
-      cliente: nome,
-      telefone,
-      entrega: entregaSelect.value,
-      endereco,
-      pagamento,
-      troco: pagamento === "dinheiro" ? Number(troco) : null,
-      itens: carrinho,
-      total: totalPedido,
-      status: "novo"
-    }
-  ]);
+  const whatsapp = "5577981184890";
+  window.location.href = `https://wa.me/${whatsapp}?text=${mensagem}`;
 
   carrinho = [];
   renderizarCarrinho();
