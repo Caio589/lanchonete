@@ -3,6 +3,7 @@ const comandaAtual = localStorage.getItem("comandaAtual");
 if (!comandaAtual) {
   alert("Comanda não encontrada");
 }
+
 import { supabase } from "./supabase.js";
 import { buscarProdutos, buscarCategorias } from "./data.js";
 
@@ -75,14 +76,9 @@ function renderizarProdutos() {
       ? produtos
       : produtos.filter(p => {
           if (!p.categoria) return false;
-
           const catProduto = p.categoria.toLowerCase().trim();
           const catAtual = categoriaAtual.toLowerCase().trim();
-
-          if (catAtual === "pizza") {
-            return catProduto.includes("pizza");
-          }
-
+          if (catAtual === "pizza") return catProduto.includes("pizza");
           return catProduto === catAtual;
         });
 
@@ -162,7 +158,7 @@ function renderizarPizza(p) {
 }
 
 /* =======================
-   CARRINHO
+   CARRINHO (COM REMOVER)
 ======================= */
 async function addCarrinho(nome, preco) {
   carrinho.push({ nome, preco });
@@ -178,38 +174,52 @@ async function addCarrinho(nome, preco) {
   ]);
 }
 
-function removerItem(index) {
-  carrinho.splice(index, 1);
-  renderizarCarrinho();
-}
-
 function renderizarCarrinho() {
   resumoEl.innerHTML = "";
   let subtotal = 0;
 
   carrinho.forEach((item, i) => {
-    resumoEl.innerHTML += `
-      ${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}
-      <button onclick="removerItem(${i})"
-        style="margin-left:8px;background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 6px;cursor:pointer">
-        ❌
-      </button><br>
-    `;
+    const linha = document.createElement("div");
+    linha.style.display = "flex";
+    linha.style.justifyContent = "space-between";
+    linha.style.alignItems = "center";
+    linha.style.marginBottom = "6px";
+
+    const texto = document.createElement("span");
+    texto.innerText = `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}`;
+
+    const btn = document.createElement("button");
+    btn.innerText = "❌";
+    btn.style.background = "#c0392b";
+    btn.style.color = "#fff";
+    btn.style.border = "none";
+    btn.style.borderRadius = "5px";
+    btn.style.padding = "2px 6px";
+    btn.style.cursor = "pointer";
+
+    btn.addEventListener("click", () => {
+      carrinho.splice(i, 1);
+      renderizarCarrinho();
+    });
+
+    linha.appendChild(texto);
+    linha.appendChild(btn);
+    resumoEl.appendChild(linha);
+
     subtotal += item.preco;
   });
 
   frete = entregaSelect.value === "fora" ? 7 : 0;
 
-  resumoEl.innerHTML += "<br>";
-  resumoEl.innerHTML +=
-    frete > 0
-      ? `🚗 Frete: R$ ${frete.toFixed(2)}`
-      : `🚚 Frete: Grátis`;
+  const freteDiv = document.createElement("div");
+  freteDiv.style.marginTop = "10px";
+  freteDiv.innerText =
+    frete > 0 ? `🚗 Frete: R$ ${frete.toFixed(2)}` : `🚚 Frete: Grátis`;
+
+  resumoEl.appendChild(freteDiv);
 
   totalEl.innerText = `Total: R$ ${(subtotal + frete).toFixed(2)}`;
 }
-
-window.removerItem = removerItem;
 
 /* =======================
    EVENTOS
@@ -249,49 +259,3 @@ function escolherSegundoSabor(pizza1, tamanho) {
     precoFinal
   );
 }
-
-/* =======================
-   ENVIAR PEDIDO
-======================= */
-window.enviarPedido = async function () {
-  if (carrinho.length === 0) {
-    alert("Carrinho vazio");
-    return;
-  }
-
-  const nome = nomeInput.value.trim();
-  const telefone = telefoneInput.value.trim();
-  const endereco = enderecoInput.value.trim();
-  const pagamento = pagamentoSelect.value;
-  const troco = trocoInput.value;
-
-  if (!nome || !telefone || !pagamento) {
-    alert("Preencha nome, telefone e pagamento");
-    return;
-  }
-
-  if (entregaSelect.value !== "retirada" && !endereco) {
-    alert("Informe o endereço");
-    return;
-  }
-
-  let subtotal = 0;
-  carrinho.forEach(i => (subtotal += i.preco));
-  const totalPedido = subtotal + frete;
-
-  let mensagem =
-    "🍔🍕 *PEDIDO – DanBurgers* 🍕🍔%0A" +
-    "━━━━━━━━━━━━━━━━━━%0A%0A";
-
-  carrinho.forEach((item, i) => {
-    mensagem += `${i + 1}️⃣ ${item.nome} — R$ ${item.preco.toFixed(2)}%0A`;
-  });
-
-  mensagem += `%0A💰 *Total:* R$ ${totalPedido.toFixed(2)}`;
-
-  const whatsapp = "5577981184890";
-  window.location.href = `https://wa.me/${whatsapp}?text=${mensagem}`;
-
-  carrinho = [];
-  renderizarCarrinho();
-};
